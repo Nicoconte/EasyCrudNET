@@ -27,7 +27,7 @@ namespace EasyCrudNET.Interfaces.SqlStatement
         public IConditionStatement LessThan(string column, string scalarVariable);
         public IConditionStatement GreaterThan(string column, string scalarVariable);
 
-        public IConditionStatement NotNull(string column);
+        public IConditionStatement IsNotNull(string column);
         public IConditionStatement IsNull(string column);
     }
 }
