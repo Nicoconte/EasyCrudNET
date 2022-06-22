@@ -280,10 +280,37 @@ easyCrud
     .Count(); //return 3 files. 4 in total, one of them has a null value
 ```
 
-<br>
-<span>TODO:</span>
-<ul>
-    <li>Transactions</li>
-    <li>More conditional as Exists, etc</li>
-    <li>Unit test</li>
-</ul>
+<h3>Mapping example</h3>
+<p>We also have a basic mapping that allows us to map a specific class against the columns of the Table</p>
+
+```c#
+var easyCrud = new EasyCrud(connection);
+
+//Create a new Mapper
+var mapper = new Mapper();
+
+//First tuple argument is the column name
+//The second one is the class property name
+mapper.SetMap<UserFiles>(new List<(string, string)>()
+{
+    ("Id", "Id"), 
+    ("UserId", "OwnerId"), 
+    ("Filename", "Filename"),
+    ("Path", "Path"),
+    ("Extension", "Extension"),
+    ("Size", "Size"),
+    ("CreatedAt", "CreatedAt")
+});
+
+//After we the set all the maps, we assign the mapper
+//to easyCrud object
+easyCrud.Mapper = mapper;
+
+
+//Ready to go! 
+var res = easyCrud
+    .Select("*")
+    .From("Files")
+    .DebugQuery()
+    .Execute<UserFiles>();
+```
