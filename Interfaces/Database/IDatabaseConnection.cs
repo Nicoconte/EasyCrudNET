@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EasyCrudNET.Interfaces.Database
 {
-    public interface IDatabase
+    public interface IDatabaseConnection
     {
         public SqlConnection GetSqlConnection();
     }

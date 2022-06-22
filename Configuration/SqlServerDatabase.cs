@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace EasyCrudNET.Configuration
 {
-    public class SqlServerDatabase : IDatabase
+    public class SqlServerDatabase : IDatabaseConnection
     {
 
         private string _connectionString;

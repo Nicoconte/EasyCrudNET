@@ -5,6 +5,8 @@ using EasyCrudNET.Extensions;
 using System.Text;
 using System.Data.SqlClient;
 using EasyCrudNET.Interfaces.Database;
+using EasyCrudNET.Mappers;
+using EasyCrudNET.Configuration;
 
 namespace EasyCrudNET
 {
@@ -17,6 +19,8 @@ namespace EasyCrudNET
 
         private SqlConnection _conn;
         private StringBuilder _currQuery = new StringBuilder(string.Empty);
+
+        public Mapper Mapper = null;
 
         #region select
         public ISelectStatement Select(params string[] columns)
@@ -248,9 +252,16 @@ namespace EasyCrudNET
 
                 SqlDataReader rd = cmd.ExecuteReader();
 
+                ClassMapper classMapper = null;
+
+                if (Mapper != null)
+                {
+                    classMapper = Mapper.GetClassMapperByType<T>();
+                }
+
                 while (rd.Read())
                 {
-                    var entity = rd.ConvertToObject<T>();
+                    var entity = rd.ConvertToObject<T>(classMapper);
                     entities.Add(entity);
                 }
 
@@ -288,9 +299,16 @@ namespace EasyCrudNET
 
                 SqlDataReader rd = await cmd.ExecuteReaderAsync();
 
+                ClassMapper classMapper = null;
+
+                if (Mapper != null)
+                {
+                    classMapper = Mapper.GetClassMapperByType<T>();
+                }
+
                 while (rd.Read())
                 {
-                    var entity = rd.ConvertToObject<T>();
+                    var entity = rd.ConvertToObject<T>(classMapper);
                     entities.Add(entity);
                 }
 
