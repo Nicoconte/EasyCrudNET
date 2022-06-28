@@ -284,33 +284,101 @@ easyCrud
 <p>We also have a basic mapping that allows us to map a specific class against the columns of the Table</p>
 
 ```c#
+
+//UserFiles.cs
+//We only map the properties we need
+public class UserFiles
+{
+    public string Id { get; set; }
+    
+    [ColumnMapper("UserId")] //By default it contains ColumnAction.Map after the column name
+    public string OwnerId { get; set; }
+    public string Filename { get; set; }
+    public string Path { get; set; }
+    public string Extension { get; set; }
+    public int Size { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+//Program.cs
 var easyCrud = new EasyCrud(connection);
 
-//Create a new Mapper
-var mapper = new Mapper();
-
-//First tuple argument is the column name
-//The second one is the class property name
-mapper.SetMap<UserFiles>(new List<(string, string)>()
-{
-    ("Id", "Id"), 
-    ("UserId", "OwnerId"), 
-    ("Filename", "Filename"),
-    ("Path", "Path"),
-    ("Extension", "Extension"),
-    ("Size", "Size"),
-    ("CreatedAt", "CreatedAt")
-});
-
-//After we the set all the maps, we assign the mapper
-//to easyCrud object
-easyCrud.Mapper = mapper;
-
-
-//Ready to go! 
 var res = easyCrud
     .Select("*")
     .From("Files")
     .DebugQuery()
     .Execute<UserFiles>();
+
+
+//User.cs
+//We can map all the properties and set what we should ignore
+public class Users
+{
+    [ColumnMapper("Id")]
+    public string UserId { get; set; }
+
+    [ColumnMapper(ColumnAction.Ignore)]
+    public string Username { get; set; }
+
+    [ColumnMapper("Password")]
+    public string SecretPassword { get; set; }
+
+    [ColumnMapper("CreatedAt")]
+    public DateTime FechaDeCreacion { get; set; }
+}
+
+//Program.cs
+easyCrud = new EasyCrud(connection);
+
+var users = easyCrud
+    .Select("*")
+    .From("users")
+    .Execute<Users>();
+
+//Clientes.cs
+//Complete map
+public class Clientes
+{
+    [ColumnMapper("cliente_num")]
+    public int Id { get; set; }
+
+    [ColumnMapper("nombre")]
+    public string Nombre { get; set; }
+
+    [ColumnMapper("Apellido")]
+    public string Apellido { get; set; }
+
+    [ColumnMapper("empresa")]
+    public string Empresa { get; set; }
+
+    [ColumnMapper("domicilio")]
+    public string Domicilio { get; set; }
+
+    [ColumnMapper("ciudad")]
+    public string Ciudad { get; set; }
+
+    [ColumnMapper("provincia_cod")]
+    public string CodigoProvincia { get; set; }
+
+    [ColumnMapper("codPostal")]
+    public string CodigoPostal { get; set; }
+
+    [ColumnMapper("telefono")]
+    public string Telefono { get; set; }
+
+    [ColumnMapper("cliente_ref")]
+    public int ReferenciaCliente { get; set; }
+
+    [ColumnMapper("estado")]
+    public string Estado { get; set; }
+}
+
+//Program.cs
+var easyCrud = new EasyCrud(connection);
+
+var clientes = easyCrud
+    .Select("*")
+    .From("clientes")
+    .DebugQuery()
+    .Execute<Clientes>();
 ```
