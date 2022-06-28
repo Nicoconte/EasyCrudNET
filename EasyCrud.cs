@@ -266,7 +266,12 @@ namespace EasyCrudNET
 
                 while (rd.Read())
                 {
-                    var entity = rd.ConvertToObject<T>(mapping);
+                    var mappingCopy = new List<MapperMetadata>();
+    
+                    if (mapping != null)
+                        mappingCopy.AddRange(mapping);
+                    
+                    var entity = rd.ConvertToObject<T>(mappingCopy);
                     entities.Add(entity);
                 }
 
@@ -315,7 +320,12 @@ namespace EasyCrudNET
 
                 while (rd.Read())
                 {
-                    var entity = rd.ConvertToObject<T>(mapping);
+                    var mappingCopy = new List<MapperMetadata>();
+
+                    if (mapping != null)
+                        mappingCopy.AddRange(mapping);
+
+                    var entity = rd.ConvertToObject<T>(mappingCopy);
                     entities.Add(entity);
                 }
 

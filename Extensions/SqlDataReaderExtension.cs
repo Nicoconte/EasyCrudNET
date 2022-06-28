@@ -13,8 +13,7 @@ namespace EasyCrudNET.Extensions
     public static class SqlDataReaderExtension
     {
         public static T ConvertToObject<T>(this SqlDataReader rd, List<MapperMetadata> mapperMetadata=null) where T : class, new()
-        {
-
+        { 
             try
             {
                 Type type = typeof(T);
@@ -36,9 +35,23 @@ namespace EasyCrudNET.Extensions
                             continue;
                         }
 
-                        var data = mapperMetadata?.FirstOrDefault(c => c.ColumnName == fieldName || _ShouldIgnoreMapping(c.ColumnAction));
 
-                        accessor[t, _ShouldIgnoreMapping(data.ColumnAction) && hasMember ? fieldName : data.PropertyName] = rd.GetValue(i);
+                        MapperMetadata data = null;
+
+                        if (hasMember)
+                        {
+                            data = mapperMetadata?.FirstOrDefault(c => _ShouldIgnoreMapping(c.ColumnAction));
+
+                            accessor[t, fieldName] = rd.GetValue(i);
+
+                            mapperMetadata?.Remove(data);
+
+                            continue;
+                        }
+
+                        data = mapperMetadata?.FirstOrDefault(c => c.ColumnName == fieldName);
+
+                        accessor[t, data.PropertyName] = rd.GetValue(i);
 
                         mapperMetadata?.Remove(data);
                     }
