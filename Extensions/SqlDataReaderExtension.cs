@@ -1,4 +1,5 @@
 ﻿using EasyCrudNET.Mappers;
+using EasyCrudNET.Mappers.DataAnnotation;
 using FastMember;
 using System;
 using System.Collections.Generic;
@@ -11,38 +12,49 @@ namespace EasyCrudNET.Extensions
 {
     public static class SqlDataReaderExtension
     {
-        public static T ConvertToObject<T>(this SqlDataReader rd, ClassMapper classMapper=null) where T : class, new()
+        public static T ConvertToObject<T>(this SqlDataReader rd, List<MapperMetadata> mapperMetadata=null) where T : class, new()
         {
-            Type type = typeof(T);
-            var accessor = TypeAccessor.Create(type);
-            var members = accessor.GetMembers();
-            var t = new T();
 
-            for (int i = 0; i < rd.FieldCount; i++)
+            try
             {
-                if (!rd.IsDBNull(i))
+                Type type = typeof(T);
+                var accessor = TypeAccessor.Create(type);
+                var members = accessor.GetMembers();
+                var t = new T();
+
+                for (int i = 0; i < rd.FieldCount; i++)
                 {
-                    string fieldName = rd.GetName(i);
-
-                    if (classMapper != null)
+                    if (!rd.IsDBNull(i))
                     {
-                        var (col, prop) = classMapper.GetColumnByFieldName(fieldName);
+                        string fieldName = rd.GetName(i);
 
-                        if (prop == null || col == null) throw new ArgumentNullException($"Invalid args. Field not found. Field {fieldName}");
+                        bool hasMember = members.Any(m => string.Equals(m.Name, fieldName, StringComparison.OrdinalIgnoreCase));
 
-                        accessor[t, prop] = rd.GetValue(i);
-                    }
-                    else
-                    {
-                        if (members.Any(m => string.Equals(m.Name, fieldName, StringComparison.OrdinalIgnoreCase)))
+                        if (mapperMetadata == null || mapperMetadata?.Count <= 0 && hasMember)
                         {
                             accessor[t, fieldName] = rd.GetValue(i);
+                            continue;
                         }
+
+                        var data = mapperMetadata?.FirstOrDefault(c => c.ColumnName == fieldName || _ShouldIgnoreMapping(c.ColumnAction));
+
+                        accessor[t, _ShouldIgnoreMapping(data.ColumnAction) && hasMember ? fieldName : data.PropertyName] = rd.GetValue(i);
+
+                        mapperMetadata?.Remove(data);
                     }
                 }
-            }
 
-            return t;
+                return t;
+            }
+            catch(Exception ex)
+            {
+                throw new Exception($"Error during convertion. Reason: {ex.Message}");
+            }
+        }
+
+        private static bool _ShouldIgnoreMapping(ColumnAction action)
+        {
+            return action == ColumnAction.Ignore;
         }
     }
 }

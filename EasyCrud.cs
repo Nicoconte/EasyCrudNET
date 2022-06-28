@@ -18,9 +18,10 @@ namespace EasyCrudNET
         }
 
         private SqlConnection _conn;
+
         private StringBuilder _currQuery = new StringBuilder(string.Empty);
 
-        public Mapper Mapper = null;
+        private ClassMapper _classMapper = new ClassMapper();
 
         #region select
         public ISelectStatement Select(params string[] columns)
@@ -252,16 +253,20 @@ namespace EasyCrudNET
 
                 SqlDataReader rd = cmd.ExecuteReader();
 
-                ClassMapper classMapper = null;
+                //Get column mapping from T
+                _classMapper.CollectAttributes<T>();
 
-                if (Mapper != null)
+                List<MapperMetadata> mapping = null;
+
+                //Check if we should get the mapping done
+                if (_classMapper.IsMappable<T>())
                 {
-                    classMapper = Mapper.GetClassMapperByType<T>();
+                    mapping = _classMapper.GetMappingMetadataByType<T>();
                 }
 
                 while (rd.Read())
                 {
-                    var entity = rd.ConvertToObject<T>(classMapper);
+                    var entity = rd.ConvertToObject<T>(mapping);
                     entities.Add(entity);
                 }
 
@@ -284,8 +289,6 @@ namespace EasyCrudNET
         {
             string sqlQuery = string.Empty.GetSqlQuery(query, _currQuery.ToString());
 
-            Console.WriteLine(sqlQuery);
-
             SqlCommand cmd = new SqlCommand(sqlQuery, _conn);
 
             if (values != null)
@@ -299,16 +302,20 @@ namespace EasyCrudNET
 
                 SqlDataReader rd = await cmd.ExecuteReaderAsync();
 
-                ClassMapper classMapper = null;
+                //Get column mapping from T
+                _classMapper.CollectAttributes<T>();
 
-                if (Mapper != null)
+                List<MapperMetadata> mapping = null;
+
+                //Check if we should get the mapping done
+                if (_classMapper.IsMappable<T>())
                 {
-                    classMapper = Mapper.GetClassMapperByType<T>();
+                    mapping = _classMapper.GetMappingMetadataByType<T>();
                 }
 
                 while (rd.Read())
                 {
-                    var entity = rd.ConvertToObject<T>(classMapper);
+                    var entity = rd.ConvertToObject<T>(mapping);
                     entities.Add(entity);
                 }
 
