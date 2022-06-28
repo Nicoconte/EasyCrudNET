@@ -49,7 +49,7 @@ namespace EasyCrudNET.Extensions
                             continue;
                         }
 
-                        data = mapperMetadata?.FirstOrDefault(c => c.ColumnName == fieldName);
+                        data = mapperMetadata?.FirstOrDefault(c => c.ColumnName.ToLower() == fieldName.ToLower());
 
                         accessor[t, data.PropertyName] = rd.GetValue(i);
 
