@@ -21,15 +21,17 @@ namespace EasyCrudNET.Extensions
                 var members = accessor.GetMembers();
                 var t = new T();
 
+                bool mapperHasValues = mapperMetadata != null || mapperMetadata?.Count != 0;
+
                 for (int i = 0; i < rd.FieldCount; i++)
                 {
                     if (!rd.IsDBNull(i))
                     {
                         string fieldName = rd.GetName(i);
 
-                        bool hasMember = members.Any(m => string.Equals(m.Name, fieldName, StringComparison.OrdinalIgnoreCase));
+                        bool hasMember = members.Any(m => string.Equals(m.Name, fieldName));
 
-                        if (mapperMetadata == null || mapperMetadata?.Count <= 0 && hasMember)
+                        if (!mapperHasValues && hasMember)
                         {
                             accessor[t, fieldName] = rd.GetValue(i);
                             continue;
@@ -44,7 +46,14 @@ namespace EasyCrudNET.Extensions
 
                             accessor[t, fieldName] = rd.GetValue(i);
 
-                            mapperMetadata?.Remove(data);
+                            if (data == null)
+                            {
+                                mapperMetadata.RemoveAll(c => c.ColumnName.ToLower() == fieldName.ToLower());
+                            }
+                            else
+                            {
+                                mapperMetadata?.Remove(data);
+                            }
 
                             continue;
                         }
