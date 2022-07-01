@@ -1,6 +1,6 @@
 <h1> EasyCrudNET </h1>
 
-<p>EasyCrudNET is a sql builder that aims to make it easier to execute basic queries and make the developer's focus more on development. It is ideal for small ABM applications.</p>
+<p>EasyCrudNET is a SQL builder and wrapper for ADO.NET that allows you to build queries declaratively and makes it easy to manipulate sql server databases.</p>
 
 <hr>
 
