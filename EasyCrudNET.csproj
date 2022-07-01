@@ -1,10 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageProjectUrl>https://github.com/Nicoconte/EasyCrudNET</PackageProjectUrl>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <RepositoryUrl>https://github.com/Nicoconte/EasyCrudNET</RepositoryUrl>
+    <Description>EasyCrudNET is a SQL builder and wrapper for ADO.NET that allows you to build queries declaratively and makes it easy to manipulate sql server databases.</Description>
   </PropertyGroup>
 
   <ItemGroup>
