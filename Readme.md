@@ -4,6 +4,11 @@
 
 <hr>
 
+<h3>Demo project: https://github.com/Nicoconte/OpenPersonalBudget.API/tree/easycrudnet-demo </h3>
+<p>I replaced entity framework for EasyCrudNET without any problems! Check it out.</p>
+
+<hr>
+
 <h3>Example and usage</h3>
 
 <br>
