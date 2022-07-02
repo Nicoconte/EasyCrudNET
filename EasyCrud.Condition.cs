@@ -102,19 +102,6 @@ namespace EasyCrudNET
             return this;
         }
 
-        public IConditionStatement OrderBy(string column)
-        {
-
-            if (string.IsNullOrWhiteSpace(column))
-            {
-                throw new ArgumentException("Invalid args. Column wasn't provided");
-            }
-
-            _currQuery.Append(string.Concat(" ORDER BY ", column));
-
-            return this;
-        }
-
         public IConditionStatement Where()
         {
             _currQuery.Append(" WHERE");
@@ -130,6 +117,25 @@ namespace EasyCrudNET
             }
 
             _currQuery.Append(string.Concat(" WHERE ", column, "=", scalarVariable));
+
+            return this;
+        }
+
+        public IConditionStatement Between(string column, string firstScalarVariable, string secondScalarVariable)
+        {
+            if (string.IsNullOrWhiteSpace(column) || string.IsNullOrWhiteSpace(firstScalarVariable) || string.IsNullOrWhiteSpace(secondScalarVariable))
+            {
+                throw new ArgumentNullException("Invalid args. Scalar variables or column weren't provided");
+            }
+
+            _currQuery.Append(string.Concat(" ", column, " BETWEEN ", firstScalarVariable, " AND ", secondScalarVariable));
+
+            return this;
+        }
+
+        public IConditionStatement Not()
+        {
+            _currQuery.Append(" NOT ");
 
             return this;
         }

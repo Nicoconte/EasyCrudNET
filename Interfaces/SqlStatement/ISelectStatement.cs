@@ -1,5 +1,4 @@
-﻿using EasyCrudNET.Interfaces.Database;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EasyCrudNET.Interfaces.SqlStatement
 {
-    public interface ISelectStatement : IConditionStatement, IDatabaseExecutor
+    public interface ISelectStatement : IConditionStatement, IClauseStatement, IDatabase
     {
         public ISelectStatement Select(params string[] columns);
         public ISelectStatement From(string tableName);

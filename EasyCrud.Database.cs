@@ -1,5 +1,5 @@
 ﻿using EasyCrudNET.Extensions;
-using EasyCrudNET.Interfaces.Database;
+using EasyCrudNET.Interfaces;
 using EasyCrudNET.Mappers;
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,17 @@ namespace EasyCrudNET
 {
     public partial class EasyCrud
     {
+
+        public void SetSqlConnection(string connectionString)
+        {
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new ArgumentNullException("Invalid 'String Connection'");
+            }
+
+            _conn = new SqlConnection(connectionString);
+        }
+
         public IEnumerable<T> Execute<T>(object values = null, string query = "") where T : class, new()
         {
             string sqlQuery = string.Empty.GetSqlQuery(query, _currQuery.ToString());

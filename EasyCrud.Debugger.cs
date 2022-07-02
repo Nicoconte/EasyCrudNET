@@ -1,4 +1,4 @@
-﻿using EasyCrudNET.Interfaces.Database;
+﻿using EasyCrudNET.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ namespace EasyCrudNET
 {
     public partial class EasyCrud
     {
-        public IDatabaseExecutor DebugQuery(string message = "")
+        public IDatabase DebugQuery(string message = "")
         {
             var messageFixed = string.IsNullOrWhiteSpace(message) ? _currQuery.ToString() : string.Concat(message, ": ", _currQuery.ToString());
 

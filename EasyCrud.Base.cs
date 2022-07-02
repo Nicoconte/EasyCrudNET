@@ -4,18 +4,14 @@ using EasyCrudNET.Extensions;
 
 using System.Text;
 using System.Data.SqlClient;
-using EasyCrudNET.Interfaces.Database;
+using EasyCrudNET.Interfaces;
 using EasyCrudNET.Mappers;
-using EasyCrudNET.Configuration;
 
 namespace EasyCrudNET
 {
     public partial class EasyCrud
     {
-        public EasyCrud(SqlConnection conn)
-        {
-            _conn = conn;
-        }
+        public EasyCrud() { }
 
         private SqlConnection _conn;
 

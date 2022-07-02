@@ -5,10 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EasyCrudNET.Interfaces.Database
+namespace EasyCrudNET.Interfaces
 {
-    public interface IDatabaseExecutor
+    public interface IDatabase
     {
+        /// <summary>
+        /// Get Sql Server connection
+        /// </summary>
+        /// <returns></returns>
+        public void SetSqlConnection(string connectionString);
+
         /// <summary>
         /// Execute query and return a List<T> 
         /// </summary>
@@ -64,7 +70,7 @@ namespace EasyCrudNET.Interfaces.Database
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public IDatabaseExecutor DebugQuery(string message = "");
+        public IDatabase DebugQuery(string message = "");
 
         /// <summary>
         /// Get the query built
