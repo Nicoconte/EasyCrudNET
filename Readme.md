@@ -1,6 +1,6 @@
 <h1> EasyCrudNET </h1>
 
-<p>EasyCrudNET is a SQL builder and wrapper for ADO.NET that allows you to build queries declaratively and makes it easy to manipulate sql server databases.</p>
+<p>EasyCrudNET is a SQL Builder that allows you to interact with a sql server database by creating declarative queries. It also includes a simple object mapper like Dapper.</p>
 
 <hr>
 
