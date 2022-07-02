@@ -69,12 +69,12 @@ using EasyCrudConsole.Utils;
 using EasyCrudNET;
 using EasyCrudNET.Configuration;
 
-string connString = "Data Source={Your host};Initial Catalog={Your database};Trusted_Connection=True;MultipleActiveResultSets=true;";
+string connectionString = "Data Source={Your host};Initial Catalog={Your database};Trusted_Connection=True;MultipleActiveResultSets=true;";
 
-//Create a SqlServer Client
-var sqlServer = new SqlServerDatabase(connString);
 
-var easyCrud = new EasyCrud(sqlServer.GetSqlConnection());
+var easyCrud = new EasyCrud();
+
+easyCrud.SetSqlConnection(connectionString);
 
 easyCrud
   .Select("Id", "UserId", "Description", "Amount")
@@ -192,10 +192,11 @@ easyCrud
 
 ```c#
 
-var sqlServerDb = new SqlServerDatabase(connString);
-var conn = sqlServerDb.GetSqlConnection();
+string connectionString = "Data Source={Your host};Initial Catalog={Your database};Trusted_Connection=True;MultipleActiveResultSets=true;";
 
-var easyCrud = new EasyCrud(conn);
+var easyCrud = new EasyCrud();
+
+easyCrud.SetSqlConnection(connectionString);
 
 
 //Execute only a query
@@ -328,7 +329,11 @@ public class Users
 }
 
 //Program.cs
-easyCrud = new EasyCrud(connection);
+string connectionString = "Data Source={Your host};Initial Catalog={Your database};Trusted_Connection=True;MultipleActiveResultSets=true;";
+
+var easyCrud = new EasyCrud();
+
+easyCrud.SetSqlConnection(connectionString);
 
 var users = easyCrud
     .Select("*")
