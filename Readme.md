@@ -1,17 +1,217 @@
-<h1> EasyCrudNET </h1>
+<h1> EasyCrudNET (Current version 1.1.1)</h1>
 
-<p>EasyCrudNET is a SQL Builder that allows you to interact with a sql server database by creating declarative queries. It also includes a simple object mapper like Dapper.</p>
+<p>EasyCrudNET is a SQL Builder that allows you to interact with a sql server database by creating declarative queries. It also includes a simple object mapper as complement (Similar to mapper).</p>
 
 <hr>
 
 <h3>Demo project: https://github.com/Nicoconte/OpenPersonalBudget.API/tree/easycrudnet-demo </h3>
-<p>I replaced entity framework for EasyCrudNET without any problems! Check it out.</p>
+<p>It's a simple CRUD project but see how someone can replace Entity Framework with EasyCrudNET without any problems! Check it out.</p>
 
 <hr>
 
-<h3>Example and usage</h3>
+<h2><strong>Getting started</strong></h2><br>
+
+<span>Get it from <a href='https://www.nuget.org/packages/EasyCrudNET' target="_blank">Nuget Packages</a> or execute any of the following command:</span><br><br>
+
+<span><strong>Package manager</strong></span><br>
+```
+Install-Package EasyCrudNET -Version 1.1.1
+```
+
+<span><strong>NET CLI</strong></span><br>
+```
+dotnet add package EasyCrudNET --version 1.1.1
+```
+
+<span>Before any use you should create an instance of EasyCrud class and set the Sql Connection by calling "SetSqlConnection" method.</span>
+
+```C#
+
+using EasyCrudNET;
+
+EasyCrud easyCrud = new EasyCrud();
+
+easyCrud.SetSqlConnection("Your string connection goes here");
+
+```
+
+<span> You can also set it up at the Startup.cs </span>
+
+```C#
+services.AddSingleton(s =>
+{
+    var easyCrud = new EasyCrud();
+    easyCrud.SetSqlConnection(Configuration.GetSection("ConnString").Value);
+    return easyCrud;
+});
+```
+
+<h2><strong>Features</strong></h2> 
+
+<span>EasyCrud contains a lot of method for building queries</span><br>
+<span>List of methods separated by statement type:</span><br>
+
+<h3><strong>Select</strong></h3>
+
+```c#
+public ISelectStatement Select(params string[] columns);
+public ISelectStatement From(string tableName);
+public ISelectStatement InnerJoin(string tableToRelate);
+public ISelectStatement On(string firstRelation, string secondRelation);
+```
+
+<h3><strong>Insert</strong></h3>
+
+```C#
+public IInsertStatement Insert(params string[] fields);
+public IInsertStatement Into(string table);
+public IInsertStatement Values(params string[] scalarValues);
+```
+
+<h3><strong>Update</strong></h3>
+
+```C#
+public IUpdateStatement Update(string tableName);
+public IUpdateStatement Set(string column, string scalarVariable);
+```
+
+<h3><strong>Delete</strong></h3>
+
+```C#
+public IDeleteStatement Delete();
+public IDeleteStatement From(string tableName);
+```
+
+<h3><strong>SQL Clauses</strong></h3>
+
+```C#
+public IClauseStatement GroupBy(string column);
+public IClauseStatement Having(string conditionQuery);
+public IClauseStatement OrderBy(string column);
+public IClauseStatement Desc();
+public IClauseStatement Asc();
+```
+
+<h3><strong>Conditions/Filters</strong></h3>
+
+```c#
+public IConditionStatement Where();
+public IConditionStatement Where(string column, string scalarVariable);       
+public IConditionStatement Or();
+public IConditionStatement Or(string column, string scalarVariable);        
+public IConditionStatement And();
+public IConditionStatement And(string column, string scalarVariable);
+public IConditionStatement Not();        
+public IConditionStatement Like(string column, string expression);
+public IConditionStatement In(params object[] values);
+public IConditionStatement LessThan(string column, string scalarVariable);
+public IConditionStatement GreaterThan(string column, string scalarVariable);
+public IConditionStatement IsNotNull(string column);
+public IConditionStatement IsNull(string column);
+public IConditionStatement Between(string column, string firstScalarVariable, string secondScalarVariable);
+```
+
+<h3><strong>Database method</strong></h3>
+
+```C#
+//Show the query built. You set a custom message before query. Ex: "NASHE: your query"
+public IDatabase DebugQuery(string message = "");
+
+//Return the query built
+public string GetRawQuery();
+
+//Execute the query and return a SQL Reader object
+public SqlDataReader ExecuteAndGetReader(object values=null, string query="");
+public Task<SqlDataReader> ExecuteAndGetReaderAsync(object values=null, string query="");
+
+//Execute INSERT/DELETE/UPDATE query and return the rows affected
+public Task<int> ExecuteAsync(object values=null, string query="");
+public int Execute(object values=null, string query="");
+
+//Execute SELECT query and return a T object
+public Task<IEnumerable<T>> ExecuteAsync<T>(object values=null, string query="") where T : class, new();
+public IEnumerable<T> Execute<T>(object values=null, string query="") where T : class, new();
+
+//Set the connection to sql server database
+public void SetSqlConnection(string connectionString);
+```
+<h3><strong>NOTES</strong></h3>
+<span>When you pass the values to any "Execute" method, the property name should match with the scalar variable name.<br>Ex:</span>
+
+```C#
+var user = easyCrud
+    .Select("*")
+    .From("Users")
+    .Where()
+    .Like("Username", "@username") //scalar variable is "username"
+    .Execute<User>(new
+    {
+        username = "foo" //So when we pass the value, the property name of the anonymous object should be exactly the same to scalar variable name. It's case sensitive
+    })
+    .FirstOrDefault();
+```
+
+<span>Another thing to keep in mind is that the second parameter of the "Execute" method can receive a Query already built before. It is an alternative in case you do not want to build the query with the sql builder and execute a query directly.<br>Ex:</span>
+
+```C#
+//Execute a query directly
+easyCrud.Execute<UserFiles>(null, "select * from files");
+
+//Execute query directly but with scalar variables inside. We should pass the values as first parameter
+easyCrud.Execute<UserFiles>(new
+{
+    id = "390d6d03-d1af-4c9f-8c3e-94e256730e0e"
+}, "select * from files where UserId=@id");
+
+//Another example
+easyCrud.Execute(new {
+    id = Guid.NewGuid().ToString(),
+    username = "foo",
+    email = "foo@gmail.com",
+    password = "superSecret",
+    date = DateTime.Now
+}, "insert into users values (@id, @username, @email, @password, @date)")
+
+
+string id = "11111";
+string username = "foooo";
+string email = "fooooo@baaaaaar.com";
+string password = "123"
+DateTime creationDate = DateTime.now;
+
+easyCrud.Execute(null, $"insert into users values ('{id}, '{username}', '{email}', '{password}', '{creationDate}')")
+```
+
+<span>At least, you can get the sql reader object and manage the result as you please. Do not forget to close the connection!<br>Ex:</span>
+
+```C#
+var readerWithRawQuery = easyCrud.ExecuteAndGetReader(null, "select * from files");
+List<UserFiles> filesWithRawQuery = new List<UserFiles>();
+
+while (readerWithRawQuery.Read())
+{
+    filesWithRawQuery.Add(new UserFiles()
+    {
+        Id = readerWithRawQuery[0].ToString(),
+        UserId = readerWithRawQuery[1].ToString(),
+        Filename = readerWithRawQuery[2].ToString(),
+        Path = readerWithRawQuery[3].ToString(),
+        Extension = readerWithRawQuery[4].ToString(),
+        Size = int.Parse(readerWithRawQuery[5].ToString()),
+        CreatedAt = DateTime.Parse(readerWithRawQuery[6].ToString()),
+    });
+}
+readerWithRawQuery.Close();
+```
 
 <br>
+<h3><strong>Class Mapper</strong></h3>
+<span>When executing a select query, easy crud takes care of mapping the response from the database to a data type T. To do this, the properties of your class must match with the name of the table column or use the <strong>ColumnMapper</strong> attribute in order to set the table column name for that class property.</span><br>
+
+<br>
+<h3><strong>Class Mapper usage</strong></h3><br>
+
+<span>Image you have the following table:</span>
 <h4>Table Users</h4>
 <table>
     <tr>
@@ -30,365 +230,53 @@
         <td>Password</td>
         <td>DATETIME</td>         
     </tr>    
-</table>
+</table><br>
 
-<h4>Table Operations</h4>
-<table>
-    <tr>
-        <td>Id</td>
-        <td>NVARCHAR</td>
-    </tr>
-    <tr>
-        <td>UserId</td>
-        <td>NVARCHAR</td>
-    </tr>    
-    <tr>
-        <td>Description</td>
-        <td>NVARCHAR</td>
-    </tr>    
-    <tr>
-        <td>Amount</td>
-        <td>INT</td>         
-    </tr>    
-    <tr>
-        <td>OperationType</td>  
-        <td>INT</td>  
-    </tr>    
-    <tr>
-        <td>PaymentType</td>  
-        <td>INT</td>                  
-    </tr>    
-    <tr>
-        <td>Category</td>                  
-        <td>INT</td>         
-    </tr>    
-    <tr>
-        <td>CreatedAt DATETIME</td>         
-        <td>DATETIME</td>        
-    </tr>    
-</table>
+<span>And your class looks like something like this</span>
 
 ```c#
-using EasyCrudConsole.Entities;
-using EasyCrudConsole.Utils;
-using EasyCrudNET;
-using EasyCrudNET.Configuration;
-
-string connectionString = "Data Source={Your host};Initial Catalog={Your database};Trusted_Connection=True;MultipleActiveResultSets=true;";
-
-
-var easyCrud = new EasyCrud();
-
-easyCrud.SetSqlConnection(connectionString);
-
-easyCrud
-  .Select("Id", "UserId", "Description", "Amount")
-  .From("Operations")
-  .Where("Id", "@id")
-  .Execute<Operations>(new
-  {
-    id = "7bd328dd-c9f8-4f4a-ba65-e3608e2731dd"
-  }); //Return a list of operations by id
-
-easyCrud
-  .Select("*")
-  .From("Operations")
-  .Where()
-  .Like("Description", "%dev%")
-  .Execute<Operations>(); // return a list of operations where description contains 'dev'
-
-var op = easyCrud
-    .Select("*")
-    .From("Operations O")
-    .InnerJoin("Users U")
-    .On("O.UserId", "U.Id")
-    .Where("O.UserId", "@id")
-    .DebugQuery()
-    .Execute<Operations>(new
-    {
-        id = "439200c8-df14-481c-935c-fd82f9c4a538"
-    })
-    .FirstOrDefault(); // return the first operation from operation list
-
-//----------------------------------
-
-easyCrud
-    .Insert()
-    .Into("Users")
-    .Values("@id", "@username", "@email","@password", "@date")
-    .DebugQuery("Custom message before showing the query")
-    .Execute(new
-    {
-        id = Guid.NewGuid().ToString(),
-        username = "foo",
-        email = "foo@gmail.com",
-        password = PasswordUtil.Hash("superSecret"),
-        date = DateTime.Now
-    }); //Insert user and return rows affected
-
-var user = easyCrud
-    .Select("*")
-    .From("Users")
-    .Where()
-    .Like("Username", "@username")
-    .Execute<User>(new
-    {
-        username = "foo"
-    })
-    .FirstOrDefault(); // return the user created before
-
-easyCrud
-    .Update("Users")
-    .Set("Username", "@newUser")
-    .Set("Email", "@newEmail")
-    .Where("Id", "@id")
-    .Execute(new
-    {
-        newUser = "foobar",
-        newEmail = "foobar@gmail.com",
-        id = user?.Id
-    }); // Update the user created before. It returns the rows affected
-
-easyCrud
-    .Delete()
-    .From("Users")
-    .Where()
-    .Like("Id", "@id")
-    .Execute(new 
-    {
-        id = user?.Id    
-    }); //Delete user by ID
-
-```
-
-<h3>Another example </h3>
-<br>
-<h4>Table Files</h4>
-<table>
-    <tr>
-        <td>Id</td>
-        <td>NVARCHAR</td>
-    </tr>
-    <tr>
-        <td>UserId</td>
-        <td>NVARCHAR</td>
-    </tr>    
-    <tr>
-        <td>Filename</td>
-        <td>NVARCHAR</td>
-    </tr>    
-    <tr>
-        <td>Path</td>
-        <td>NVARCHAR</td>         
-    </tr>    
-    <tr>
-        <td>Extension</td>  
-        <td>NVARCHAR</td>  
-    </tr>    
-    <tr>
-        <td>Size</td>  
-        <td>INT</td>                  
-    </tr>    
-    <tr>
-        <td>CreatedAt DATETIME</td>         
-        <td>DATETIME</td>        
-    </tr>    
-</table>
-
-```c#
-
-string connectionString = "Data Source={Your host};Initial Catalog={Your database};Trusted_Connection=True;MultipleActiveResultSets=true;";
-
-var easyCrud = new EasyCrud();
-
-easyCrud.SetSqlConnection(connectionString);
-
-
-//Execute only a query
-var filesWithoutScalarAndRawQuery = easyCrud.Execute<UserFiles>(null, "select * from files");
-
-//Execute query with scalar variables inside. We should pass the values as first parameter
-var filesWithtScalarAndRawQuery = easyCrud.Execute<UserFiles>(new
+public class User
 {
-    id = "390d6d03-d1af-4c9f-8c3e-94e256730e0e"
-}, "select * from files where UserId=@id");
-
-
-//We also could get the sqlreader object in order to manipulate the data
-//based on our needs
-var readerWithRawQuery = easyCrud.ExecuteAndGetReader(null, "select * from files");
-List<UserFiles> filesWithRawQuery = new List<UserFiles>();
-
-while (readerWithRawQuery.Read())
-{
-    filesWithRawQuery.Add(new UserFiles()
-    {
-        Id = readerWithRawQuery[0].ToString(),
-        UserId = readerWithRawQuery[1].ToString(),
-        Filename = readerWithRawQuery[2].ToString(),
-        Path = readerWithRawQuery[3].ToString(),
-        Extension = readerWithRawQuery[4].ToString(),
-        Size = int.Parse(readerWithRawQuery[5].ToString()),
-        CreatedAt = DateTime.Parse(readerWithRawQuery[6].ToString()),
-    });
-}
-readerWithRawQuery.Close();
-
-easyCrud
-    .Insert()
-    .Into("Files")
-    .Values("@id", "@userId", "@filename", "@path", "@extension", "@size", "@date")
-    .Execute(new
-    {
-        id = Guid.NewGuid().ToString(),
-        userId = Guid.NewGuid().ToString(),
-        filename = "test.pdf",
-        path = "C:/bar/foo/test.pdf",
-        extension = ".pdf",
-        size = 120,
-        date = DateTime.Now
-    });
-
-//In case we pass a query as second parameter,
-//it wont be able to execute because we already have a query built with the sql builder
-easyCrud
-    .Insert()
-    .Into("Files")
-    .Values("@id", "@userId", "@filename", "@path", "@extension", "@size", "@date")
-    .Execute(new
-    {
-        id = Guid.NewGuid().ToString(),
-        userId = Guid.NewGuid().ToString(),
-        filename = "test.pdf",
-        path = "C:/bar/foo/test.pdf",
-        extension = ".pdf",
-        size = 120,
-        date = DateTime.Now
-    }, "insert into Files values ('a', 'b', 'c', 'd', 'f', 1, GETDATE())");
-
-//Null type checking
-easyCrud
-    .Select("*")
-    .From("Files")
-    .Where()
-    .IsNull("Filename")
-    .DebugQuery()
-    .Execute<UserFiles>()
-    .FirstOrDefault();
-
-easyCrud
-    .Select("*")
-    .From("Files")
-    .Where()
-    .IsNotNull("Filename")
-    .DebugQuery()
-    .Execute<UserFiles>()
-    .Count(); //return 3 files. 4 in total, one of them has a null value
-```
-
-<h3>Mapping example</h3>
-<p>We also have a basic mapping that allows us to map a specific class against the columns of the Table</p>
-
-```c#
-
-//UserFiles.cs
-//We only map the properties we need
-public class UserFiles
-{
-    public string Id { get; set; }
-    
-    [ColumnMapper("UserId")] //By default it contains ColumnAction.Map after the column name
-    public string OwnerId { get; set; }
-    public string Filename { get; set; }
-    public string Path { get; set; }
-    public string Extension { get; set; }
-    public int Size { get; set; }
+    public string UserId { get; set; }
+    public string Username { get; set; }
+    public string Email { get; set; }
+    public string SecretPassword { get; set; }
     public DateTime CreatedAt { get; set; }
 }
+```
 
-//Program.cs
-var easyCrud = new EasyCrud(connection);
+<span>The properties of your class doesnt match table column name so when you execute a select query it'll fail because the mapping. To avoid that error we can:</span>
 
-var res = easyCrud
-    .Select("*")
-    .From("Files")
-    .DebugQuery()
-    .Execute<UserFiles>();
+<span>1- Change the property name to the table column name</span>
 
-
-//User.cs
-//We can map all the properties and set what we should ignore
-public class Users
+```c#
+public class User
 {
+    public string Id { get; set; }
+    public string Username { get; set; }
+    public string Email { get; set; }
+    public string Password { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+```
+  
+<span>2- Use <strong>ColumnMapper</strong> attribute and set the table column name</span>
+
+```c#
+public class User
+{
+    //As second parameter it receives a ColumnAction. ColumnAction.Map (Map property) or ColumnAction.Ignore (Ignore property from mapping)
     [ColumnMapper("Id")]
     public string UserId { get; set; }
 
-    [ColumnMapper(ColumnAction.Ignore)]
     public string Username { get; set; }
-
+    public string Email { get; set; }
+        
     [ColumnMapper("Password")]
     public string SecretPassword { get; set; }
 
-    [ColumnMapper("CreatedAt")]
-    public DateTime FechaDeCreacion { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
+```    
 
-//Program.cs
-string connectionString = "Data Source={Your host};Initial Catalog={Your database};Trusted_Connection=True;MultipleActiveResultSets=true;";
-
-var easyCrud = new EasyCrud();
-
-easyCrud.SetSqlConnection(connectionString);
-
-var users = easyCrud
-    .Select("*")
-    .From("users")
-    .Execute<Users>();
-
-//Clientes.cs
-//Complete map
-public class Clientes
-{
-    [ColumnMapper("cliente_num")]
-    public int Id { get; set; }
-
-    [ColumnMapper("nombre")]
-    public string Nombre { get; set; }
-
-    [ColumnMapper("Apellido")]
-    public string Apellido { get; set; }
-
-    [ColumnMapper("empresa")]
-    public string Empresa { get; set; }
-
-    [ColumnMapper("domicilio")]
-    public string Domicilio { get; set; }
-
-    [ColumnMapper("ciudad")]
-    public string Ciudad { get; set; }
-
-    [ColumnMapper("provincia_cod")]
-    public string CodigoProvincia { get; set; }
-
-    [ColumnMapper("codPostal")]
-    public string CodigoPostal { get; set; }
-
-    [ColumnMapper("telefono")]
-    public string Telefono { get; set; }
-
-    [ColumnMapper("cliente_ref")]
-    public int ReferenciaCliente { get; set; }
-
-    [ColumnMapper("estado")]
-    public string Estado { get; set; }
-}
-
-//Program.cs
-var easyCrud = new EasyCrud(connection);
-
-var clientes = easyCrud
-    .Select("*")
-    .From("clientes")
-    .DebugQuery()
-    .Execute<Clientes>();
-```
+<span>Map all the properties or not is totally optional and depends on your needs</span>
