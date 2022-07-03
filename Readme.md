@@ -1,6 +1,6 @@
 <h1> EasyCrudNET (Current version 1.1.1)</h1>
 
-<p>EasyCrudNET is a SQL Builder that allows you to interact with a sql server database by creating declarative queries. It also includes a simple object mapper as complement (Similar to mapper).</p>
+<p>EasyCrudNET is a SQL Builder that allows you to interact with a sql server database by creating declarative queries. It also includes a simple object mapper as complement (Similar to Dapper).</p>
 
 <hr>
 
@@ -48,7 +48,7 @@ services.AddSingleton(s =>
 
 <h2><strong>Features</strong></h2> 
 
-<span>EasyCrud contains a lot of method for building queries</span><br>
+<span>EasyCrud contains a lot of method for building queries</span><br><br>
 <span>List of methods separated by statement type:</span><br>
 
 <h3><strong>Select</strong></h3>
@@ -182,7 +182,7 @@ DateTime creationDate = DateTime.now;
 easyCrud.Execute(null, $"insert into users values ('{id}, '{username}', '{email}', '{password}', '{creationDate}')")
 ```
 
-<span>At least, you can get the sql reader object and manage the result as you please. Do not forget to close the connection!<br>Ex:</span>
+<span>Lastly, you can get the sql reader object and manage the result as you please. Do not forget to close the connection!<br>Ex:</span>
 
 ```C#
 var readerWithRawQuery = easyCrud.ExecuteAndGetReader(null, "select * from files");
