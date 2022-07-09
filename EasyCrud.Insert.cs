@@ -1,9 +1,6 @@
-﻿using EasyCrudNET.Interfaces.SqlStatement;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using EasyCrudNET.Exceptions;
+using EasyCrudNET.Interfaces.SqlStatement;
+using EasyCrudNET.Resources;
 
 namespace EasyCrudNET
 {
@@ -13,12 +10,12 @@ namespace EasyCrudNET
         {
             if (fields == null || fields.Length < 0)
             {
-                throw new ArgumentException("Invalid args. ScalarValues weren't provided");
+                throw new SqlBuilderException(Messages.Get("NotEnoughParameterError"));
             }
 
             var cols = fields.Length == 0 ? string.Empty : string.Concat("(", fields.ToList(), ")");
 
-            _currQuery.Append(string.Concat("INSERT ", cols));
+            _query.Append(string.Concat("INSERT ", cols));
 
             return this;
         }
@@ -27,10 +24,10 @@ namespace EasyCrudNET
         {
             if (string.IsNullOrWhiteSpace(table))
             {
-                throw new ArgumentNullException($"Invalid args. Invalid table {table}");
+                throw new SqlBuilderException(Messages.Get("TableNotProvidedError"));
             }
 
-            _currQuery.Append(string.Concat(" INTO ", table));
+            _query.Append(string.Concat(" INTO ", table));
 
             return this;
         }
@@ -40,10 +37,10 @@ namespace EasyCrudNET
 
             if (scalarValues == null || scalarValues.Length == 0)
             {
-                throw new ArgumentException("Invalid args. No scalarValues provided");
+                throw new SqlBuilderException(Messages.Get("NotEnoughParameterError"));
             }
 
-            _currQuery.Append(string.Concat(" VALUES (", string.Join(",", scalarValues.ToList()), ")"));
+            _query.Append(string.Concat(" VALUES (", string.Join(",", scalarValues.ToList()), ")"));
 
             return this;
         }

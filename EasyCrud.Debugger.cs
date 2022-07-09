@@ -1,9 +1,4 @@
 ﻿using EasyCrudNET.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EasyCrudNET
 {
@@ -11,7 +6,7 @@ namespace EasyCrudNET
     {
         public IDatabase DebugQuery(string message = "")
         {
-            var messageFixed = string.IsNullOrWhiteSpace(message) ? _currQuery.ToString() : string.Concat(message, ": ", _currQuery.ToString());
+            var messageFixed = string.IsNullOrWhiteSpace(message) ? _query.ToString() : string.Concat(message, ": ", _query.ToString());
 
             Console.WriteLine(messageFixed);
 
@@ -19,7 +14,7 @@ namespace EasyCrudNET
         }
         public string GetRawQuery()
         {
-            return _currQuery.ToString();
+            return _query.ToString();
         }
     }
 }

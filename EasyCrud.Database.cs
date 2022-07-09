@@ -1,12 +1,9 @@
-﻿using EasyCrudNET.Extensions;
-using EasyCrudNET.Interfaces;
+﻿using EasyCrudNET.Exceptions;
+using EasyCrudNET.Extensions;
 using EasyCrudNET.Mappers;
-using System;
-using System.Collections.Generic;
+using EasyCrudNET.Resources;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace EasyCrudNET
 {
@@ -17,17 +14,17 @@ namespace EasyCrudNET
         {
             if (string.IsNullOrWhiteSpace(connectionString))
             {
-                throw new ArgumentNullException("Invalid 'String Connection'");
+                throw new SqlConnectionException(Messages.Get("EmptyConnectionStringError"));
             }
 
-            _conn = new SqlConnection(connectionString);
+            _sqlConnection = new SqlConnection(connectionString);
         }
 
         public IEnumerable<T> Execute<T>(object values = null, string query = "") where T : class, new()
         {
-            string sqlQuery = string.Empty.GetSqlQuery(query, _currQuery.ToString());
+            string sqlQuery = string.Empty.GetSqlQuery(query, _query.ToString());
 
-            SqlCommand cmd = new SqlCommand(sqlQuery, _conn);
+            SqlCommand cmd = new SqlCommand(sqlQuery, _sqlConnection);
 
             if (values != null)
                 cmd.MapSqlParameters(sqlQuery, values);
@@ -36,7 +33,7 @@ namespace EasyCrudNET
 
             try
             {
-                _conn.Open();
+                _sqlConnection.Open();
 
                 SqlDataReader rd = cmd.ExecuteReader();
 
@@ -62,16 +59,16 @@ namespace EasyCrudNET
                     entities.Add(entity);
                 }
 
-                _conn.Close();
+                _sqlConnection.Close();
             }
             catch (Exception ex)
             {
-                throw new Exception($"Something goes wrong during the operation. Error: {ex.Message}");
+                throw new DatabaseExecuteException(Messages.Get("DatabaseError"), ex.InnerException);
             }
             finally
             {
-                _currQuery = new StringBuilder();
-                _conn.Close();
+                _query = new StringBuilder();
+                _sqlConnection.Close();
             }
 
             return entities;
@@ -79,9 +76,9 @@ namespace EasyCrudNET
 
         public async Task<IEnumerable<T>> ExecuteAsync<T>(object values = null, string query = "") where T : class, new()
         {
-            string sqlQuery = string.Empty.GetSqlQuery(query, _currQuery.ToString());
+            string sqlQuery = string.Empty.GetSqlQuery(query, _query.ToString());
 
-            SqlCommand cmd = new SqlCommand(sqlQuery, _conn);
+            SqlCommand cmd = new SqlCommand(sqlQuery, _sqlConnection);
 
             if (values != null)
                 cmd.MapSqlParameters(sqlQuery, values);
@@ -90,7 +87,7 @@ namespace EasyCrudNET
 
             try
             {
-                _conn.Open();
+                _sqlConnection.Open();
 
                 SqlDataReader rd = await cmd.ExecuteReaderAsync();
 
@@ -116,16 +113,16 @@ namespace EasyCrudNET
                     entities.Add(entity);
                 }
 
-                _conn.Close();
+                _sqlConnection.Close();
             }
             catch (Exception ex)
             {
-                throw new Exception($"Something goes wrong during the operation. Error: {ex.Message}");
+                throw new DatabaseExecuteException(Messages.Get("DatabaseError"), ex.InnerException);
             }
             finally
             {
-                _currQuery = new StringBuilder();
-                _conn.Close();
+                _query = new StringBuilder();
+                _sqlConnection.Close();
             }
 
             return entities;
@@ -133,86 +130,86 @@ namespace EasyCrudNET
 
         public int Execute(object values = null, string query = "")
         {
-            string sqlQuery = string.Empty.GetSqlQuery(query, _currQuery.ToString());
+            string sqlQuery = string.Empty.GetSqlQuery(query, _query.ToString());
 
             if (sqlQuery.ToLower().Contains("select"))
             {
-                throw new ArgumentException("Invalid query. This method will only execute with insert/delete/update statement");
+                throw new DatabaseExecuteException(Messages.Get("CannotExecuteOpError"));
             }
 
-            SqlCommand cmd = new SqlCommand(sqlQuery, _conn);
+            SqlCommand cmd = new SqlCommand(sqlQuery, _sqlConnection);
 
             if (values != null)
                 cmd.MapSqlParameters(sqlQuery, values);
 
             try
             {
-                _conn.Open();
+                _sqlConnection.Open();
 
                 var rows = cmd.ExecuteNonQuery();
 
-                _conn.Close();
+                _sqlConnection.Close();
 
                 return rows;
             }
             catch (Exception ex)
             {
-                throw new Exception($"Something goes wrong during the operation. Error: {ex.Message}");
+                throw new DatabaseExecuteException(Messages.Get("DatabaseError"), ex.InnerException);
             }
             finally
             {
-                _currQuery = new StringBuilder();
-                _conn.Close();
+                _query = new StringBuilder();
+                _sqlConnection.Close();
             }
         }
 
         public async Task<int> ExecuteAsync(object values = null, string query = "")
         {
-            string sqlQuery = string.Empty.GetSqlQuery(query, _currQuery.ToString());
+            string sqlQuery = string.Empty.GetSqlQuery(query, _query.ToString());
 
             if (sqlQuery.ToLower().Contains("select"))
             {
-                throw new ArgumentException("Invalid query. This method will only execute with insert/delete/update statement");
+                throw new DatabaseExecuteException(Messages.Get("CannotExecuteOpError"));
             }
 
-            SqlCommand cmd = new SqlCommand(sqlQuery, _conn);
+            SqlCommand cmd = new SqlCommand(sqlQuery, _sqlConnection);
 
             if (values != null)
                 cmd.MapSqlParameters(sqlQuery, values);
 
             try
             {
-                _conn.Open();
+                _sqlConnection.Open();
 
                 var rows = await cmd.ExecuteNonQueryAsync();
 
-                _conn.Close();
+                _sqlConnection.Close();
 
                 return rows;
             }
             catch (Exception ex)
             {
-                throw new Exception($"Something goes wrong during the operation. Error: {ex.Message}");
+                throw new DatabaseExecuteException(Messages.Get("DatabaseError"), ex.InnerException);
             }
             finally
             {
-                _currQuery = new StringBuilder();
-                _conn.Close();
+                _query = new StringBuilder();
+                _sqlConnection.Close();
             }
         }
 
         public async Task<SqlDataReader> ExecuteAndGetReaderAsync(object values = null, string query = "")
         {
-            var sqlQuery = string.IsNullOrWhiteSpace(query) ? _currQuery.ToString() : query;
+            var sqlQuery = string.IsNullOrWhiteSpace(query) ? _query.ToString() : query;
 
-            SqlCommand cmd = new SqlCommand(sqlQuery, _conn);
+            SqlCommand cmd = new SqlCommand(sqlQuery, _sqlConnection);
 
             if (values != null)
                 cmd.MapSqlParameters(sqlQuery, values);
 
             try
             {
-                _conn.Open();
+                _sqlConnection.Open();
 
                 var rd = await cmd.ExecuteReaderAsync();
 
@@ -220,26 +217,26 @@ namespace EasyCrudNET
             }
             catch (Exception ex)
             {
-                throw new Exception($"Something goes wrong during the operation. Error: {ex.Message}");
+                throw new DatabaseExecuteException(Messages.Get("DatabaseError"), ex.InnerException);
             }
             finally
             {
-                _currQuery = new StringBuilder();
+                _query = new StringBuilder();
             }
         }
 
         public SqlDataReader ExecuteAndGetReader(object values = null, string query = "")
         {
-            var sqlQuery = string.IsNullOrWhiteSpace(query) ? _currQuery.ToString() : query;
+            var sqlQuery = string.IsNullOrWhiteSpace(query) ? _query.ToString() : query;
 
-            SqlCommand cmd = new SqlCommand(sqlQuery, _conn);
+            SqlCommand cmd = new SqlCommand(sqlQuery, _sqlConnection);
 
             if (values != null)
                 cmd.MapSqlParameters(sqlQuery, values);
 
             try
             {
-                _conn.Open();
+                _sqlConnection.Open();
 
                 var rd = cmd.ExecuteReader();
 
@@ -247,11 +244,11 @@ namespace EasyCrudNET
             }
             catch (Exception ex)
             {
-                throw new Exception($"Something goes wrong during the operation. Error: {ex.Message}");
+                throw new DatabaseExecuteException(Messages.Get("DatabaseError"), ex.InnerException);
             }
             finally
             {
-                _currQuery = new StringBuilder();
+                _query = new StringBuilder();
             }
         }
     }

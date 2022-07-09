@@ -1,9 +1,6 @@
-﻿using EasyCrudNET.Interfaces.SqlStatement;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using EasyCrudNET.Exceptions;
+using EasyCrudNET.Interfaces.SqlStatement;
+using EasyCrudNET.Resources;
 
 namespace EasyCrudNET
 {
@@ -13,40 +10,51 @@ namespace EasyCrudNET
         {
             if (columns == null || columns?.Length < 0)
             {
-                throw new ArgumentException("Invalid args: Columns weren't passed");
+                throw new SqlBuilderException(Messages.Get("NotEnoughParameterError"));
             }
 
             var cols = columns?.Length == 0 ? "*" : string.Join(",", columns.ToList());
 
-            _currQuery.Append(string.Concat("SELECT ", cols));
+            _query.Append(string.Concat("SELECT ", cols));
 
             return this;
         }
 
         public ISelectStatement From(string tableName)
         {
-            if (tableName == null || string.IsNullOrWhiteSpace(tableName))
+            if (string.IsNullOrWhiteSpace(tableName))
             {
-                throw new ArgumentException("Invalid args: Table name wasn't provided");
+                throw new SqlBuilderException(Messages.Get("TableNotProvidedError"));
             }
 
-            _currQuery.Append(string.Concat(" FROM ", tableName));
+            _query.Append(string.Concat(" FROM ", tableName));
 
             return this;
         }
 
         public ISelectStatement InnerJoin(string tableToRelate)
         {
-            _currQuery.Append(string.Concat(" INNER JOIN ", tableToRelate));
+
+            if (string.IsNullOrWhiteSpace(tableToRelate))
+            {
+                throw new SqlBuilderException(Messages.Get("TableNotProvidedError"));
+            }
+
+            _query.Append(string.Concat(" INNER JOIN ", tableToRelate));
 
             return this;
         }
 
         public ISelectStatement On(string firstRelation, string secondRelation)
         {
+            if (string.IsNullOrWhiteSpace(firstRelation) || string.IsNullOrWhiteSpace(secondRelation))
+            {
+                throw new SqlBuilderException(Messages.Get("NotEnoughParameterError"));
+            }
+
             var relation = string.Concat(" ON ", firstRelation, "=", secondRelation);
 
-            _currQuery.Append(relation);
+            _query.Append(relation);
 
             return this;
         }

@@ -1,9 +1,6 @@
-﻿using EasyCrudNET.Interfaces.SqlStatement;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using EasyCrudNET.Exceptions;
+using EasyCrudNET.Interfaces.SqlStatement;
+using EasyCrudNET.Resources;
 
 namespace EasyCrudNET
 {
@@ -11,7 +8,7 @@ namespace EasyCrudNET
     {
         public IDeleteStatement Delete()
         {
-            _currQuery.Append("DELETE ");
+            _query.Append("DELETE ");
 
             return this;
         }
@@ -20,10 +17,10 @@ namespace EasyCrudNET
         {
             if (string.IsNullOrWhiteSpace(tableName))
             {
-                throw new ArgumentNullException($"Invalid args. Invalid table {tableName}");
+                throw new SqlBuilderException(Messages.Get("TableNotProvidedError"));
             }
 
-            _currQuery.Append(string.Concat(" FROM ", tableName));
+            _query.Append(string.Concat(" FROM ", tableName));
 
             return this;
         }

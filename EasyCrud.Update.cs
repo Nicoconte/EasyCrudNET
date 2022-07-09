@@ -1,9 +1,6 @@
-﻿using EasyCrudNET.Interfaces.SqlStatement;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using EasyCrudNET.Exceptions;
+using EasyCrudNET.Interfaces.SqlStatement;
+using EasyCrudNET.Resources;
 
 namespace EasyCrudNET
 {
@@ -13,10 +10,10 @@ namespace EasyCrudNET
         {
             if (string.IsNullOrWhiteSpace(tableName))
             {
-                throw new ArgumentNullException($"Invalid args. Invalid table {tableName}");
+                throw new SqlBuilderException(Messages.Get("TableNotProvidedError"));
             }
 
-            _currQuery.Append(string.Concat("UPDATE ", tableName));
+            _query.Append(string.Concat("UPDATE ", tableName));
 
             return this;
         }
@@ -24,18 +21,18 @@ namespace EasyCrudNET
         public IUpdateStatement Set(string column, string scalarVariable)
         {
 
-            if (string.IsNullOrWhiteSpace(column) && string.IsNullOrWhiteSpace(scalarVariable))
+            if (string.IsNullOrWhiteSpace(column) || string.IsNullOrWhiteSpace(scalarVariable))
             {
-                throw new ArgumentNullException("Invalid args. No column or scalarVariable were provided");
+                throw new SqlBuilderException(Messages.Get("NotEnoughParameterError"));
             }
 
-            if (_currQuery.ToString().Contains("SET"))
+            if (_query.ToString().Contains("SET"))
             {
-                _currQuery.Append(string.Concat(",", column, "=", scalarVariable));
+                _query.Append(string.Concat(",", column, "=", scalarVariable));
             }
             else
             {
-                _currQuery.Append(string.Concat(" SET ", column, "=", scalarVariable));
+                _query.Append(string.Concat(" SET ", column, "=", scalarVariable));
             }
             return this;
         }

@@ -1,6 +1,6 @@
-<h1> EasyCrudNET (Current version 1.1.1)</h1>
+<h1> EasyCrudNET (Current version 1.2.1)</h1>
 
-<p>EasyCrudNET is a SQL Builder that allows you to interact with a sql server database by creating declarative queries. It also includes a simple object mapper as complement (Similar to Dapper).</p>
+<p>EasyCrudNET is a SQL Builder that allows you to interact with a sql server database by creating declarative queries. It also includes a simple class mapper as complement.</p>
 
 <hr>
 
@@ -23,7 +23,7 @@ Install-Package EasyCrudNET -Version 1.1.1
 dotnet add package EasyCrudNET --version 1.1.1
 ```
 
-<span>Before any use you should create an instance of EasyCrud class and set the Sql Connection by calling "SetSqlConnection" method.</span>
+<span>Before any use you should create an instance of EasyCrud class and set the Sql Connection by calling "SetSqlConnection" method. (Using this option we can have multiple connections as instances we have)</span>
 
 ```C#
 
@@ -35,7 +35,7 @@ easyCrud.SetSqlConnection("Your string connection goes here");
 
 ```
 
-<span> You can also set it up at the Startup.cs </span>
+<span>Other options is setting up at the Startup.cs (Using this option we only have one connection)</span>
 
 ```C#
 services.AddSingleton(s =>
@@ -43,6 +43,15 @@ services.AddSingleton(s =>
     var easyCrud = new EasyCrud();
     easyCrud.SetSqlConnection(Configuration.GetSection("ConnString").Value);
     return easyCrud;
+});
+```
+
+<span>In posterior versions (> 1.2.x) you can do something like this</span>
+
+```C#
+services.AddEasyCrud(o =>
+{
+    o.UseSqlServerConnection(Configuration["ConnectionString"]);
 });
 ```
 

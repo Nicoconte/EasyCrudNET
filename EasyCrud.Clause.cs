@@ -1,9 +1,6 @@
-﻿using EasyCrudNET.Interfaces.SqlStatement;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using EasyCrudNET.Exceptions;
+using EasyCrudNET.Interfaces.SqlStatement;
+using EasyCrudNET.Resources;
 
 namespace EasyCrudNET
 {
@@ -11,24 +8,24 @@ namespace EasyCrudNET
     {
         public IClauseStatement Asc()
         {
-            _currQuery.Append(" ASC");
+            _query.Append(" ASC");
             return this;
         }
 
         public IClauseStatement Desc()
         {
-            _currQuery.Append(" DESC");
+            _query.Append(" DESC");
             return this;
         }
 
         public IClauseStatement GroupBy(string column)
         {
-            if (column == null || string.IsNullOrWhiteSpace(column))
+            if (string.IsNullOrWhiteSpace(column))
             {
-                throw new ArgumentException("Invalid args: Column wasn't provided");
+                throw new SqlBuilderException(Messages.Get("ColumnNotProvidedError"));
             }
 
-            _currQuery.Append(string.Concat(" GROUP BY ", column));
+            _query.Append(string.Concat(" GROUP BY ", column));
 
             return this;
         }
@@ -37,10 +34,10 @@ namespace EasyCrudNET
         {
             if (string.IsNullOrWhiteSpace(conditionQuery))
             {
-                throw new ArgumentException("Invalid args: conditionQuery wasn't provided");
+                throw new SqlBuilderException(Messages.Get("ConditionQueryError"));
             }
 
-            _currQuery.Append(string.Concat(" HAVING ", conditionQuery));
+            _query.Append(string.Concat(" HAVING ", conditionQuery));
 
             return this;
         }
@@ -49,10 +46,10 @@ namespace EasyCrudNET
         {
             if (string.IsNullOrWhiteSpace(column))
             {
-                throw new ArgumentException("Invalid args. Column wasn't provided");
+                throw new SqlBuilderException(Messages.Get("ColumnNotProvidedError"));
             }
 
-            _currQuery.Append(string.Concat(" ORDER BY ", column));
+            _query.Append(string.Concat(" ORDER BY ", column));
 
             return this;
         }

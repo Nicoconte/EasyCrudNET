@@ -1,4 +1,6 @@
-﻿using System;
+﻿using EasyCrudNET.Exceptions;
+using EasyCrudNET.Resources;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -27,7 +29,7 @@ namespace EasyCrudNET.Extensions
 
             if (propsCount != values.GetType().GetProperties().Length)
             {
-                throw new ArgumentException("Invalid args: Not enough values passed");
+                throw new DatabaseExecuteException(Messages.Get("NotEnoughArgsToMapError"));
             }
         }
     }
