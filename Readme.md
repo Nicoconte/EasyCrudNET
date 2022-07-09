@@ -15,12 +15,12 @@
 
 <span><strong>Package manager</strong></span><br>
 ```
-Install-Package EasyCrudNET -Version 1.1.1
+Install-Package EasyCrudNET -Version x.x.x
 ```
 
 <span><strong>NET CLI</strong></span><br>
 ```
-dotnet add package EasyCrudNET --version 1.1.1
+dotnet add package EasyCrudNET --version x.x.x
 ```
 
 <span>Before any use you should create an instance of EasyCrud class and set the Sql Connection by calling "SetSqlConnection" method. (Using this option we can have multiple connections as instances we have)</span>
