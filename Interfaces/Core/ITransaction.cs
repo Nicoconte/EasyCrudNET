@@ -8,8 +8,7 @@ namespace EasyCrudNET.Interfaces.Core
 {
     public interface ITransaction
     {
-        public ITransaction BeginTransaction();
-        public ITransaction Query(string sqlQuery, object sqlValues);
+        public ITransaction BeginTransaction(Action<List<(string TransactionQuery, object TransactionValues)>> setupAction);
         public bool Commit();
     }
 }

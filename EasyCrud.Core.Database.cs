@@ -1,5 +1,6 @@
 ﻿using EasyCrudNET.Exceptions;
 using EasyCrudNET.Extensions;
+using EasyCrudNET.Helpers;
 using EasyCrudNET.Interfaces;
 using EasyCrudNET.Interfaces.Core;
 using EasyCrudNET.Mappers;
@@ -12,6 +13,11 @@ namespace EasyCrudNET
 {
     public partial class EasyCrud
     {
+
+        private SqlConnection _sqlConnection;
+        private List<List<(string FieldName, object FieldValue)>> _sqlDataReaderResponses = new List<List<(string, object)>>();
+        private List<(string PropName, object PropValue)> _queryValues = new List<(string, object)>();
+
         /// <summary>
         /// Create a new Sql connection.
         /// </summary>
@@ -64,13 +70,7 @@ namespace EasyCrudNET
 
         public IDatabase BindValues(object values)
         {
-            foreach(var value in values.GetType().GetProperties())
-            {
-                var propName = value.Name;
-                var propValue = values.GetType().GetProperty(propName).GetValue(values);
-
-                _queryValues.Add((propName, propValue));
-            }
+            _queryValues.AddRange(ObjectHelper.DestructureObject(values));
 
             return this;
         }
@@ -190,52 +190,5 @@ namespace EasyCrudNET
             return responseCopy;
         }
 
-        public IEnumerable<T> MapResultTo<T>() where T : class, new()
-        {
-            try
-            {
-                if (_sqlDataReaderResponses.Count  <= 0)
-                {
-                    throw new EntityMappingException(string.Format(Messages.Get("CannotMapResultError")));
-                }
-
-                List<T> entities = new List<T>();
-
-                _classMapper.CollectMapperMetadata<T>();
-
-                foreach (var readerResponse in _sqlDataReaderResponses)
-                {
-                    entities.Add(_classMapper.ConvertSqlReaderResult<T>(readerResponse));
-                }
-
-                _sqlDataReaderResponses.Clear();
-
-                return entities;
-            }
-            catch (Exception ex)
-            {
-                throw new EntityMappingException(string.Format(Messages.Get("MapError"), typeof(T).Name, ex.Message), ex);
-            }
-        }
-        public IEnumerable<T> MapResultTo<T>(Func<List<(string FieldName, object FieldValue)>, T> map) where T : class, new()
-        {
-            try
-            {
-                List<T> entities = new List<T>();
-
-                foreach (var res in _sqlDataReaderResponses)
-                {
-                    entities.Add(map.Invoke(res));
-                }
-
-                _sqlDataReaderResponses.Clear();
-
-                return entities;
-            }
-            catch(Exception ex)
-            {
-                throw new EntityMappingException(string.Format(Messages.Get("MapError"), typeof(T).Name, ex.Message), ex);
-            }
-        }
     }
 }
