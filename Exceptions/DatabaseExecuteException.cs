@@ -9,9 +9,9 @@ namespace EasyCrudNET.Exceptions
     public class DatabaseExecuteException : Exception
     {
         public DatabaseExecuteException(string message, Exception inner)
-            : base($"Database execute exception. Error: {message}", inner) { }
+            : base($"\n-> Database execute exception. Error: {message}", inner) { }
 
         public DatabaseExecuteException(string message)
-            : base($"Database execute exception. Error: {message}") { }
+            : base($"\n-> Database execute exception. Error: {message}") { }
     }
 }

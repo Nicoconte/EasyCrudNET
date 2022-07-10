@@ -1,7 +1,9 @@
 ﻿using EasyCrudNET.Exceptions;
 using EasyCrudNET.Extensions;
+using EasyCrudNET.Interfaces;
 using EasyCrudNET.Mappers;
 using EasyCrudNET.Resources;
+using FastMember;
 using System.Data.SqlClient;
 using System.Text;
 
@@ -9,7 +11,11 @@ namespace EasyCrudNET
 {
     public partial class EasyCrud
     {
-
+        /// <summary>
+        /// Create a new Sql connection.
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <exception cref="SqlConnectionException"></exception>
         public void SetSqlConnection(string connectionString)
         {
             if (string.IsNullOrWhiteSpace(connectionString))
@@ -20,235 +26,214 @@ namespace EasyCrudNET
             _sqlConnection = new SqlConnection(connectionString);
         }
 
-        public IEnumerable<T> Execute<T>(object values = null, string query = "") where T : class, new()
+        private void _SqlOperationWrapper(Action<SqlCommand> action)
         {
-            string sqlQuery = string.Empty.GetSqlQuery(query, _query.ToString());
+            string queryBuilt = _query.ToString();
 
-            SqlCommand cmd = new SqlCommand(sqlQuery, _sqlConnection);
+            if (string.IsNullOrWhiteSpace(queryBuilt))
+            {
+                throw new DatabaseExecuteException(Messages.Get("EmptyQueryError"));
+            }
 
-            if (values != null)
-                cmd.MapSqlParameters(sqlQuery, values);
-
-            var entities = new List<T>();
+            SqlCommand cmd = new SqlCommand(queryBuilt, _sqlConnection);
+    
+            if (_queryValues.Count > 0)
+            {
+                cmd.MapSqlParameters(queryBuilt, _queryValues);
+                _queryValues.Clear();
+            }
 
             try
             {
                 _sqlConnection.Open();
 
-                SqlDataReader rd = cmd.ExecuteReader();
-
-                //Get column mapping from T
-                _classMapper.CollectAttributes<T>();
-
-                List<MapperMetadata> mapping = null;
-
-                //Check if we should get the mapping done
-                if (_classMapper.IsMappable<T>())
-                {
-                    mapping = _classMapper.GetMappingMetadataByType<T>();
-                }
-
-                while (rd.Read())
-                {
-                    var mappingCopy = new List<MapperMetadata>();
-
-                    if (mapping != null)
-                        mappingCopy.AddRange(mapping);
-
-                    var entity = rd.ConvertToObject<T>(mappingCopy);
-                    entities.Add(entity);
-                }
-
-                _sqlConnection.Close();
+                action(cmd);
             }
             catch (Exception ex)
             {
-                throw new DatabaseExecuteException(Messages.Get("DatabaseError"), ex.InnerException);
+                throw new DatabaseExecuteException(string.Concat(Messages.Get("DatabaseError"), "\n=> ", ex.Message, " => ", ex.StackTrace), ex.InnerException);
             }
             finally
             {
                 _query = new StringBuilder();
-                _sqlConnection.Close();
-            }
-
-            return entities;
-        }
-
-        public async Task<IEnumerable<T>> ExecuteAsync<T>(object values = null, string query = "") where T : class, new()
-        {
-            string sqlQuery = string.Empty.GetSqlQuery(query, _query.ToString());
-
-            SqlCommand cmd = new SqlCommand(sqlQuery, _sqlConnection);
-
-            if (values != null)
-                cmd.MapSqlParameters(sqlQuery, values);
-
-            var entities = new List<T>();
-
-            try
-            {
-                _sqlConnection.Open();
-
-                SqlDataReader rd = await cmd.ExecuteReaderAsync();
-
-                //Get column mapping from T
-                _classMapper.CollectAttributes<T>();
-
-                List<MapperMetadata> mapping = null;
-
-                //Check if we should get the mapping done
-                if (_classMapper.IsMappable<T>())
-                {
-                    mapping = _classMapper.GetMappingMetadataByType<T>();
-                }
-
-                while (rd.Read())
-                {
-                    var mappingCopy = new List<MapperMetadata>();
-
-                    if (mapping != null)
-                        mappingCopy.AddRange(mapping);
-
-                    var entity = rd.ConvertToObject<T>(mappingCopy);
-                    entities.Add(entity);
-                }
-
-                _sqlConnection.Close();
-            }
-            catch (Exception ex)
-            {
-                throw new DatabaseExecuteException(Messages.Get("DatabaseError"), ex.InnerException);
-            }
-            finally
-            {
-                _query = new StringBuilder();
-                _sqlConnection.Close();
-            }
-
-            return entities;
-        }
-
-        public int Execute(object values = null, string query = "")
-        {
-            string sqlQuery = string.Empty.GetSqlQuery(query, _query.ToString());
-
-            if (sqlQuery.ToLower().Contains("select"))
-            {
-                throw new DatabaseExecuteException(Messages.Get("CannotExecuteOpError"));
-            }
-
-            SqlCommand cmd = new SqlCommand(sqlQuery, _sqlConnection);
-
-            if (values != null)
-                cmd.MapSqlParameters(sqlQuery, values);
-
-            try
-            {
-                _sqlConnection.Open();
-
-                var rows = cmd.ExecuteNonQuery();
-
-                _sqlConnection.Close();
-
-                return rows;
-            }
-            catch (Exception ex)
-            {
-                throw new DatabaseExecuteException(Messages.Get("DatabaseError"), ex.InnerException);
-            }
-            finally
-            {
-                _query = new StringBuilder();
+             
                 _sqlConnection.Close();
             }
         }
 
-        public async Task<int> ExecuteAsync(object values = null, string query = "")
+        public IDatabase BindValues(object values)
         {
-            string sqlQuery = string.Empty.GetSqlQuery(query, _query.ToString());
-
-            if (sqlQuery.ToLower().Contains("select"))
+            foreach(var value in values.GetType().GetProperties())
             {
-                throw new DatabaseExecuteException(Messages.Get("CannotExecuteOpError"));
+                var propName = value.Name;
+                var propValue = values.GetType().GetProperty(propName).GetValue(values);
+
+                _queryValues.Add((propName, propValue));
             }
 
-            SqlCommand cmd = new SqlCommand(sqlQuery, _sqlConnection);
-
-            if (values != null)
-                cmd.MapSqlParameters(sqlQuery, values);
-
-            try
-            {
-                _sqlConnection.Open();
-
-                var rows = await cmd.ExecuteNonQueryAsync();
-
-                _sqlConnection.Close();
-
-                return rows;
-            }
-            catch (Exception ex)
-            {
-                throw new DatabaseExecuteException(Messages.Get("DatabaseError"), ex.InnerException);
-            }
-            finally
-            {
-                _query = new StringBuilder();
-                _sqlConnection.Close();
-            }
+            return this;
         }
 
-        public async Task<SqlDataReader> ExecuteAndGetReaderAsync(object values = null, string query = "")
+        public IDatabase ExecuteRawQuery(string query)
         {
-            var sqlQuery = string.IsNullOrWhiteSpace(query) ? _query.ToString() : query;
-
-            SqlCommand cmd = new SqlCommand(sqlQuery, _sqlConnection);
-
-            if (values != null)
-                cmd.MapSqlParameters(sqlQuery, values);
-
-            try
+            if (_query.Length > 0)
             {
-                _sqlConnection.Open();
-
-                var rd = await cmd.ExecuteReaderAsync();
-
-                return rd;
+                throw new SqlBuilderException(Messages.Get("QueryAlreadyBuiltError"));
             }
-            catch (Exception ex)
+
+            _query = new StringBuilder(query);
+
+            _SqlOperationWrapper(cmd =>
             {
-                throw new DatabaseExecuteException(Messages.Get("DatabaseError"), ex.InnerException);
-            }
-            finally
-            {
-                _query = new StringBuilder();
-            }
-        }
-
-        public SqlDataReader ExecuteAndGetReader(object values = null, string query = "")
-        {
-            var sqlQuery = string.IsNullOrWhiteSpace(query) ? _query.ToString() : query;
-
-            SqlCommand cmd = new SqlCommand(sqlQuery, _sqlConnection);
-
-            if (values != null)
-                cmd.MapSqlParameters(sqlQuery, values);
-
-            try
-            {
-                _sqlConnection.Open();
-
                 var rd = cmd.ExecuteReader();
 
-                return rd;
+                while (rd.Read())
+                {
+                    var resCollector = new List<(string, object)>();
+
+                    for (int i = 0; i < rd.FieldCount; i++)
+                    {
+                        if (!rd.IsDBNull(i))
+                        {
+                            resCollector.Add((rd.GetName(i), rd.GetValue(i)));
+                        }
+                    }
+
+                    _sqlDataReaderResponses.Add(resCollector);
+                }
+
+                rd.Close();
+
+            });
+
+            return this;
+        }
+
+        public IDatabase ExecuteQuery()
+        {
+            _SqlOperationWrapper(cmd =>
+            {
+                var rd = cmd.ExecuteReader();
+
+                while (rd.Read())
+                {
+                    var resCollector = new List<(string, object)>();
+
+                    for (int i = 0; i < rd.FieldCount; i++)
+                    {
+                        if (!rd.IsDBNull(i))
+                        {
+                            resCollector.Add((rd.GetName(i), rd.GetValue(i)));
+                        }
+                    }
+
+                    _sqlDataReaderResponses.Add(resCollector);
+                }
+
+                rd.Close();
+            });
+
+            return this;
+        }
+
+        public int SaveChangesRawQuery(string query)
+        {
+
+            if (_query.Length > 0)
+            {
+                throw new SqlBuilderException(Messages.Get("QueryAlreadyBuiltError"));
+            }
+
+            if (query.ToLower().Contains("select"))
+            {
+                throw new DatabaseExecuteException(Messages.Get("CannotExecuteOpError"));
+            }
+
+            _query = new StringBuilder(query);
+
+            int rows = 0;
+
+            _SqlOperationWrapper(cmd =>
+            {
+                rows = cmd.ExecuteNonQuery();
+            });
+
+            return rows;
+        }
+
+        public int SaveChanges()
+        {
+            if (_query.ToString().ToLower().Contains("select"))
+            {
+                throw new DatabaseExecuteException(Messages.Get("CannotExecuteOpError"));
+            }
+
+            int rows = 0;
+
+            _SqlOperationWrapper(cmd =>
+            {
+                rows = cmd.ExecuteNonQuery();
+            });
+
+            return rows;
+        }
+
+        public List<List<(string FieldName, object FieldValue)>> GetResult()
+        {
+            var responseCopy = new List<List<(string, object)>>();
+
+            responseCopy.AddRange(_sqlDataReaderResponses);
+
+            _sqlDataReaderResponses.Clear();
+                
+            return responseCopy;
+        }
+
+        public IEnumerable<T> MapResultTo<T>() where T : class, new()
+        {
+            try
+            {
+                if (_sqlDataReaderResponses.Count  <= 0)
+                {
+                    throw new EntityMappingException(string.Format(Messages.Get("CannotMapResultError")));
+                }
+
+                List<T> entities = new List<T>();
+
+                _classMapper.CollectMapperMetadata<T>();
+
+                foreach (var readerResponse in _sqlDataReaderResponses)
+                {
+                    entities.Add(_classMapper.ConvertSqlReaderResult<T>(readerResponse));
+                }
+
+                _sqlDataReaderResponses.Clear();
+
+                return entities;
             }
             catch (Exception ex)
             {
-                throw new DatabaseExecuteException(Messages.Get("DatabaseError"), ex.InnerException);
+                throw new EntityMappingException(string.Format(Messages.Get("MapError"), typeof(T).Name, ex.Message), ex);
             }
-            finally
+        }
+        public IEnumerable<T> MapResultTo<T>(Func<List<(string FieldName, object FieldValue)>, T> map) where T : class, new()
+        {
+            try
             {
-                _query = new StringBuilder();
+                List<T> entities = new List<T>();
+
+                foreach (var res in _sqlDataReaderResponses)
+                {
+                    entities.Add(map.Invoke(res));
+                }
+
+                _sqlDataReaderResponses.Clear();
+
+                return entities;
+            }
+            catch(Exception ex)
+            {
+                throw new EntityMappingException(string.Format(Messages.Get("MapError"), typeof(T).Name, ex.Message), ex);
             }
         }
     }

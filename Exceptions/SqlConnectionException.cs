@@ -8,6 +8,6 @@ namespace EasyCrudNET.Exceptions
 {
     public class SqlConnectionException : Exception
     {
-        public SqlConnectionException(string message) : base($"Sql connection exception: {message}") { }
+        public SqlConnectionException(string message) : base($"\n-> Sql connection exception: {message}") { }
     }
 }

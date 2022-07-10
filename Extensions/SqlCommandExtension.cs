@@ -11,23 +11,23 @@ namespace EasyCrudNET.Extensions
 {
     public static class SqlCommandExtension
     {
-        public static void MapSqlParameters(this SqlCommand cmd, string sqlQuery, object values)
+        public static void MapSqlParameters(this SqlCommand cmd, string query, List<(string PropName, object PropValue)> pairs)
         {
             int propsCount = 0;
 
-            foreach (var value in values.GetType().GetProperties())
+            foreach(var pair in pairs)
             {
-                if (sqlQuery.Contains($"@{value.Name}"))
+                var sqlName = $"@{pair.PropName}";
+
+                if (query.Contains(sqlName))
                 {
-                    var propFinded = value.Name;
-                    var propValue = values?.GetType()?.GetProperty(propFinded)?.GetValue(values);
-                    cmd.Parameters.AddWithValue($"@{propFinded}", propValue);
+                    cmd.Parameters.AddWithValue(sqlName, pair.PropValue);
 
                     propsCount++;
                 }
             }
 
-            if (propsCount != values.GetType().GetProperties().Length)
+            if (propsCount != pairs.Count)
             {
                 throw new DatabaseExecuteException(Messages.Get("NotEnoughArgsToMapError"));
             }

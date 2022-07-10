@@ -9,10 +9,10 @@ namespace EasyCrudNET.Exceptions
     public class SqlBuilderException : Exception
     {
         public SqlBuilderException(string message, Exception inner) 
-            : base($"Sql builder exception: {message}", inner)
+            : base($"\n->Sql builder exception: {message}", inner)
         { }
         public SqlBuilderException(string message)
-            : base($"Sql builder exception: {message}")
+            : base($"\n->Sql builder exception: {message}")
         { }
     }
 }

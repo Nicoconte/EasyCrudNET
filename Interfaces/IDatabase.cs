@@ -8,63 +8,7 @@ using System.Threading.Tasks;
 namespace EasyCrudNET.Interfaces
 {
     public interface IDatabase
-    {
-        /// <summary>
-        /// Get Sql Server connection
-        /// </summary>
-        /// <returns></returns>
-        public void SetSqlConnection(string connectionString);
-
-        /// <summary>
-        /// Execute query and return a List<T> 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="values"></param>
-        /// <param name="query"></param>
-        /// <returns>a list of T objects</returns>
-        public IEnumerable<T> Execute<T>(object values=null, string query="") where T : class, new();
-
-        /// <summary>
-        /// Execute async query and return a List<T> 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="values"></param>
-        /// <param name="query"></param>
-        /// <returns>a list of T objects</returns>
-        public Task<IEnumerable<T>> ExecuteAsync<T>(object values=null, string query="") where T : class, new();
-
-        /// <summary>
-        /// Execute query (Insert, update or delete) and return affected rows 
-        /// </summary
-        /// <param name="values"></param>
-        /// <param name="query"></param>
-        /// <returns>affected rows (INT)</returns>
-        public int Execute(object values=null, string query="");
-
-        /// <summary>
-        /// Execute async query (Insert, update or delete) and return affected rows 
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="query"></param>
-        /// <returns>affected rows (INT)</returns>
-        public Task<int> ExecuteAsync(object values=null, string query="");
-
-        /// <summary>
-        /// Execute async query and return a SqlDataReader object. Do not forget to close it after use.
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="query"></param>
-        /// <returns>SqlDataReader object</returns>
-        public Task<SqlDataReader> ExecuteAndGetReaderAsync(object values=null, string query="");
-
-        /// <summary>
-        /// Execute async query and return a SqlDataReader object. Do not forget to close it after use.
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="query"></param>
-        /// <returns>SqlDataReader object</returns>
-        public SqlDataReader ExecuteAndGetReader(object values=null, string query="");        
-    
+    {    
         /// <summary>
         /// Debug query in the console before execution
         /// </summary>
@@ -73,9 +17,65 @@ namespace EasyCrudNET.Interfaces
         public IDatabase DebugQuery(string message = "");
 
         /// <summary>
-        /// Get the query built
+        /// Sets the values ​​of the scalar variables declared in the query. 
+        /// Important, the name of the object properties must match with the name of the scalar variables 
         /// </summary>
-        /// <returns>Query built</returns>
-        public string GetRawQuery();
+        /// <param name="values"></param>
+        /// <returns></returns>
+        public IDatabase BindValues(object values);
+    
+        /// <summary>
+        /// Get the result from SELECT statement. 
+        /// Its return a Matrix of List where 
+        /// every row is represent by a list and the row's column by tuples (column name, column value) 
+        /// </summary>
+        /// <returns>List<List<(string, object)>></returns>
+        public List<List<(string FieldName, object FieldValue)>> GetResult();
+
+        /// <summary>
+        /// Map the result from SELECT statement into T
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public IEnumerable<T> MapResultTo<T>() where T : class, new();        
+
+        /// <summary>
+        /// Map manually the result SELECT statement into T
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="map"></param>
+        /// <returns></returns>
+        public IEnumerable<T> MapResultTo<T>(Func<List<(string FieldName, object FieldValue)>, T> map) where T : class, new();
+
+        /// <summary>
+        /// Execute raw sql query (SELECT STATEMENT) define by the user. In order to get the result 
+        /// we should call some OUTPUT method (Like GetResult or MapResultTo)
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public IDatabase ExecuteRawQuery(string query);
+
+        /// <summary>
+        /// Execute query built (SELECT STATEMENT) with sql builder. In order to get the result 
+        /// we should call some OUTPUT method (Like GetResult or MapResultTo)
+        /// </summary>
+        /// <returns></returns>
+        public IDatabase ExecuteQuery();
+
+
+        /// <summary>
+        /// Execute raw sql query (INSERT/DELETE/UPDATE STATEMENT) define by the user. 
+        /// Its return the number of rows affected
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public int SaveChangesRawQuery(string query);
+
+        /// <summary>
+        /// Execute query built (INSERT/DELETE/UPDATE STATEMENT) with sql builder. 
+        /// Its return the number of rows affected
+        /// </summary>
+        /// <returns></returns>
+        public int SaveChanges();
     }
 }
