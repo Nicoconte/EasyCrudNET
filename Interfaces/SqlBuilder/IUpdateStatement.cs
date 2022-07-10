@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EasyCrudNET.Interfaces.SqlStatement
+namespace EasyCrudNET.Interfaces.SqlBuilder
 {
     public interface IUpdateStatement : IConditionStatement
     {

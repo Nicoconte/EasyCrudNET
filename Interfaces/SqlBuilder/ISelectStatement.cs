@@ -1,10 +1,11 @@
-﻿using System;
+﻿using EasyCrudNET.Interfaces.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EasyCrudNET.Interfaces.SqlStatement
+namespace EasyCrudNET.Interfaces.SqlBuilder
 {
     public interface ISelectStatement : IConditionStatement, IClauseStatement, IDatabase
     {

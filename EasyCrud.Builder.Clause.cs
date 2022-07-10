@@ -1,8 +1,6 @@
 ﻿using EasyCrudNET.Exceptions;
-using EasyCrudNET.Interfaces;
-using EasyCrudNET.Interfaces.SqlStatement;
+using EasyCrudNET.Interfaces.SqlBuilder;
 using EasyCrudNET.Resources;
-using System.Data.SqlClient;
 
 namespace EasyCrudNET
 {

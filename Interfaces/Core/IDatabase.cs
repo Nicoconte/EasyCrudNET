@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EasyCrudNET.Interfaces
+namespace EasyCrudNET.Interfaces.Core
 {
     public interface IDatabase
     {    

@@ -1,11 +1,9 @@
-﻿using EasyCrudNET.Interfaces;
-using Microsoft.Extensions.Logging;
+﻿using EasyCrudNET.Interfaces.Core;
 
 namespace EasyCrudNET
 {
     public partial class EasyCrud
     {
-
         public IDatabase DebugQuery(string message = "")
         {
             var messageFixed = string.IsNullOrWhiteSpace(message) ? _query.ToString() : string.Concat(message, ": ", _query.ToString());

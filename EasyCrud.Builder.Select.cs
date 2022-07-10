@@ -1,5 +1,5 @@
 ﻿using EasyCrudNET.Exceptions;
-using EasyCrudNET.Interfaces.SqlStatement;
+using EasyCrudNET.Interfaces.SqlBuilder;
 using EasyCrudNET.Resources;
 
 namespace EasyCrudNET

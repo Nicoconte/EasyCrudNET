@@ -1,6 +1,7 @@
 ﻿using EasyCrudNET.Exceptions;
 using EasyCrudNET.Extensions;
 using EasyCrudNET.Interfaces;
+using EasyCrudNET.Interfaces.Core;
 using EasyCrudNET.Mappers;
 using EasyCrudNET.Resources;
 using FastMember;
