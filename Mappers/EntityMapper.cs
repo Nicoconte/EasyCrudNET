@@ -11,6 +11,8 @@ namespace EasyCrudNET.Mappers
 
         public void CollectMapperMetadata<T>()
         {
+            _mappingMetadata.Clear();
+
             Type type = typeof(T);
 
             var properties = type.GetProperties();
@@ -64,10 +66,6 @@ namespace EasyCrudNET.Mappers
 
                 accessor[t, data.PropertyName] = FieldValue;
             }
-
-            //Clear metadata after use
-            //TODO: Storage in cache so we avoid collect attributes again 
-            _mappingMetadata.Clear();  
 
             return t;
         }
