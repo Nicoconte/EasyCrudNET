@@ -1,5 +1,5 @@
 ﻿using EasyCrudNET.Exceptions;
-using EasyCrudNET.Mappers.Attributes;
+using EasyCrudNET.Mappers.DataAnnotation;
 using EasyCrudNET.Resources;
 using FastMember;
 

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EasyCrudNET.Mappers.Attributes
+namespace EasyCrudNET.Mappers.DataAnnotation
 {
     public class Field : Attribute
     {

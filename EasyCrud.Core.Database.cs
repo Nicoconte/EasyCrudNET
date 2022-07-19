@@ -13,7 +13,6 @@ namespace EasyCrudNET
 {
     public partial class EasyCrud
     {
-
         private SqlConnection _sqlConnection;
         private List<List<(string FieldName, object FieldValue)>> _sqlDataReaderResponses = new List<List<(string, object)>>();
         private List<(string PropName, object PropValue)> _queryValues = new List<(string, object)>();
