@@ -5,13 +5,13 @@
 <hr>
 
 <h3><strong>Usage examples:</strong></h3>
-<a href='https://www.nuget.org/packages/EasyCrudNET' target="_blank">Repository</a>
+<a href='https://github.com/Nicoconte/EasyCrudNET.Examples.git' target="_blank">Repository</a>
 
 <hr>
 
 <h2><strong>Getting started</strong></h2><br>
 
-<span>Get it from <a href='https://github.com/Nicoconte/EasyCrudNET.Examples.git' target="_blank">Nuget Packages</a> or execute any of the following command:</span><br><br>
+<span>Get it from <a href='https://www.nuget.org/packages/EasyCrudNET' target="_blank">Nuget Packages</a> or execute any of the following command:</span><br><br>
 
 <span><strong>Package manager</strong></span><br>
 ```
