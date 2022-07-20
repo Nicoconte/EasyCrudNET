@@ -16,18 +16,11 @@ namespace EasyCrudNET.Helpers
         /// <returns></returns>
         public static List<(string PropName, object PropValue)> DestructureObject(object values)
         {
-
-            List<(string PropName, object PropValue)> objectInfoContainer = new List<(string PropName,object PropValue)>();
-
-            foreach (var value in values.GetType().GetProperties())
-            {
-                var propName = value.Name;
-                var propValue = values.GetType().GetProperty(propName).GetValue(values);
-
-                objectInfoContainer.Add((propName, propValue));
-            }
-
-            return objectInfoContainer;
+            return values
+                .GetType()
+                .GetProperties()
+                .Select(c => (c.Name, values.GetType().GetProperty(c.Name).GetValue(values)))
+                .ToList();
         }
     }
 }
