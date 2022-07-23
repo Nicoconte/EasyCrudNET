@@ -1,11 +1,6 @@
 <h1> EasyCrudNET (Current version 2.0.0)</h1>
 
-<p>EasyCrudNET is a SQL Builder that allows you to interact with a sql server database by creating declarative queries. It also includes a simple entity mapper as complement.</p>
-
-<hr>
-
-<h3><strong>Usage examples:</strong></h3>
-<a href='https://github.com/Nicoconte/EasyCrudNET.Examples.git' target="_blank">Repository</a>
+<p>EasyCrudNET is a SQL Builder that allows you to interact with sql server database by creating declarative queries. It also includes a simple entity mapper as complement.</p>
 
 <hr>
 
@@ -125,7 +120,7 @@ public IConditionStatement Between(string column, string firstScalarVariable, st
 ```C#
 public IDatabase DebugQuery(string message = "");
 
-public IDatabase BindValues(object values); //The property name should match with the scalar variable name passed before at the sql builder
+public IDatabase BindValues(object values);
 
 public List<List<(string FieldName, object FieldValue)>> GetResult();
 
@@ -138,7 +133,6 @@ public IDatabase ExecuteQuery();
 public int SaveChangesRawQuery(string query);
 public int SaveChanges();
 
-//Set the connection to sql server database
 public void SetSqlConnection(string connectionString);
 ```
 
@@ -153,7 +147,216 @@ public class User
 
     public string Password { get; set; }
  
-    [Field("CreatedAt")] //Map the entity property 'CreationDate' with the table field 'CreatedAt'
+    [Field("CreatedAt")] 
     public DateTime CreationDate { get; set; }
 }
 ```
+
+<hr>
+
+<h3><strong>Examples:</strong></h3>
+
+<h4><strong>Select data from database using sql builder:</strong></h4>
+
+```c# 
+
+easyCrud
+    .Select("*") //SELECT *
+    .From("Users") //FROM Users
+    .Where("username", "@username") //WHERE username=@username
+    .And("password", "@password") // AND password=@password
+    .BindValues(new 
+    {
+        username = "foo", //property name should match with scalar variable name
+        password = "bar"
+    })
+    .ExecuteQuery() //Require method
+    .GetResult(); //Require output method
+
+//The GetResult method will return an list of lists where each list represents a row/record
+//and the tuples will represent the field name with its value
+```
+
+<h4><strong>EasyCrudNET provide a feature to map the query result to T.</strong></h4>
+
+```c#
+easyCrud
+    .Select("*")
+    .From("Users")
+    .Where("username", "@username")
+    .And("password", "@password")
+    .BindValues(new 
+    {
+        username = "foo",
+        password = "bar"
+    })
+    .ExecuteQuery()
+    .MapResultTo<Users>(); //Return a IEnumerable of Users
+
+```
+
+<h4><strong>You can map the result to T by yourself.</strong></h4>
+
+```c#
+easyCrud
+    .Select("*")
+    .From("Users")
+    .Where("username", "@username")
+    .And("password", "@password")
+    .BindValues(new 
+    {
+        username = "foo",
+        password = "bar"
+    })
+    .ExecuteQuery()
+    .MapResultTo<Users>(res => 
+    {
+        return new Users()
+        {
+            Id = int.Parse(c[0].FieldValue.ToString()),
+            Name = c[1].FieldValue.ToString(),
+            Password = c[2].FieldValue.ToString(),
+            CreationDate = DateTime.Parse(c[3].FieldValue.ToString()),
+        };        
+    });
+
+//Notes:
+//We can pass into MapResultTo<T> method a callback where the  
+//res is a list of tuples(FieldName, FieldValue).
+```
+
+<h4><strong>Notes:</strong></h4>
+<h4>In order to map an entity, the property name should match with the fieldname or use the 'Field' attribute. Ex:</h4>
+
+```c#
+
+public class Users
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Password { get; set; }
+
+    [Field("CreatedAt")] //Map the property 'CreationDate' with field 'CreatedAt'
+    public DateTime CreationDate { get; set; }
+}
+
+```
+
+<h4><strong>Select data from database using raw queries</strong></h4>
+
+```C#
+
+easyCrud.ExecuteRawQuery("select * from Users").GetResult();
+
+easyCrud.ExecuteRawQuery("select * from Users").MapResultTo<Users>();
+
+easyCrud
+    .ExecuteRawQuery("select * from Users where username=@username and password=@password")
+    .BindValues(new 
+    {
+        username = "foo",
+        password = "bar"        
+    })
+    .GetResult();
+
+easyCrud
+    .ExecuteRawQuery("select * from Users where username=@username and password=@password")
+    .BindValues(new 
+    {
+        username = "foo",
+        password = "bar"        
+    })
+    .MapResultTo<Users>();    
+
+```
+
+<h4><strong>Modify database using sql builder</strong></h4>
+
+``` c#
+
+easyCrud
+    .Insert()
+    .Into("Users")
+    .Values("@username", "@password", "@date")
+    .BindValues(new 
+    {
+        username = "foo",
+        password = "bar",
+        date = DateTime.Now
+    })
+    .SaveChanges(); //Return rows affected
+
+easyCrud
+    .Update("Users")
+    .Set("username", "@username")
+    .Set("password", "@password")
+    .BindValues(new 
+    {
+        username = "foo",
+        password = "bar"
+    })
+    .SaveChanges();     
+
+easyCrud
+    .Delete()
+    .From("Users")
+    .Where("Id", "@id")
+    .BindValues(new 
+    {
+        id = 1,
+    })
+    .SaveChanges();        
+
+```
+
+<h4><strong>Modify database using raw queries</strong></h4>
+
+```C#
+
+easyCrud.SaveChangesRawQuery("delete from Users"); //lol
+
+easyCrud
+    .BindValues(new 
+    {
+        username = "foo",
+        password = "bar",
+        date = DateTime.Now
+    })
+    .SaveChangesRawQuery("insert into Users values (@username, @password, @date)");
+
+easyCrud
+    .BindValues(new
+    {
+        id = 1
+    })
+    .SaveChangesRawQuery($"update users set username='{"foodoeee"}' where id=@id");
+
+```
+
+<h4><strong>Execute transactions</strong></h4>
+
+```c#
+var success = easyCrud
+    .BeginTransaction((queries) =>
+    {
+        queries.Add(("insert into Users values (@username1, @password1, @date1)", new
+        {
+            username1 = "foor",
+            password1 = "barrr",
+            date1 = DateTime.Now,
+        }));
+        
+        queries.Add(("insert into Users values (@username2, @password2, @date2)", new
+        {
+            username2 = "faaas",
+            password2 = "buuur",
+            date2 = DateTime.Now,
+        }));    
+
+        queries.Add(("insert into facturas values ('fooss', 'sass', GETDATE())", null));
+    })
+    .Commit(); //Return a boolean
+
+```
+
+<a href='https://github.com/Nicoconte/EasyCrudNET.Examples.git' target="_blank">More examples</a>
