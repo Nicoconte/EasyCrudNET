@@ -1,4 +1,4 @@
-<h1> EasyCrudNET (Current version 2.0.0)</h1>
+<h1> EasyCrudNET (Current version 2.1.0)</h1>
 
 <p>EasyCrudNET is a SQL Builder that allows you to interact with sql server database by creating declarative queries. It also includes a simple entity mapper as complement.</p>
 
