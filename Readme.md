@@ -251,21 +251,21 @@ easyCrud.ExecuteRawQuery("select * from Users").GetResult();
 easyCrud.ExecuteRawQuery("select * from Users").MapResultTo<Users>();
 
 easyCrud
-    .ExecuteRawQuery("select * from Users where username=@username and password=@password")
     .BindValues(new 
     {
         username = "foo",
         password = "bar"        
     })
+    .ExecuteRawQuery("select * from Users where username=@username and password=@password")
     .GetResult();
 
 easyCrud
-    .ExecuteRawQuery("select * from Users where username=@username and password=@password")
     .BindValues(new 
     {
         username = "foo",
         password = "bar"        
     })
+    .ExecuteRawQuery("select * from Users where username=@username and password=@password")
     .MapResultTo<Users>();    
 
 ```
