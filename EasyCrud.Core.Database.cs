@@ -67,44 +67,22 @@ namespace EasyCrudNET
             }
         }
 
-        public IDatabase BindValues(object values)
+        public IDatabase FromSql(string query)
         {
-            _queryValues.AddRange(ObjectHelper.DestructureObject(values));
 
-            return this;
-        }
-
-        public IDatabase ExecuteRawQuery(string query)
-        {
-            if (_query.Length > 0)
+            if (string.IsNullOrWhiteSpace(query)) 
             {
-                throw new SqlBuilderException(Messages.Get("QueryAlreadyBuiltError"));
+                throw new SqlBuilderException(Messages.Get("EmptyQueryError"));
             }
 
             _query = new StringBuilder(query);
 
-            _SqlOperationWrapper(cmd =>
-            {
-                var rd = cmd.ExecuteReader();
+            return this;
+        }
 
-                while (rd.Read())
-                {
-                    var resCollector = new List<(string, object)>();
-
-                    for (int i = 0; i < rd.FieldCount; i++)
-                    {
-                        if (!rd.IsDBNull(i))
-                        {
-                            resCollector.Add((rd.GetName(i), rd.GetValue(i)));
-                        }
-                    }
-
-                    _sqlDataReaderResponses.Add(resCollector);
-                }
-
-                rd.Close();
-
-            });
+        public IDatabase BindValues(object values)
+        {
+            _queryValues.AddRange(ObjectHelper.DestructureObject(values));
 
             return this;
         }
@@ -134,31 +112,6 @@ namespace EasyCrudNET
             });
 
             return this;
-        }
-
-        public int SaveChangesRawQuery(string query)
-        {
-
-            if (_query.Length > 0)
-            {
-                throw new SqlBuilderException(Messages.Get("QueryAlreadyBuiltError"));
-            }
-
-            if (query.ToLower().Contains("select"))
-            {
-                throw new DatabaseExecuteException(Messages.Get("CannotExecuteOpError"));
-            }
-
-            _query = new StringBuilder(query);
-
-            int rows = 0;
-
-            _SqlOperationWrapper(cmd =>
-            {
-                rows = cmd.ExecuteNonQuery();
-            });
-
-            return rows;
         }
 
         public int SaveChanges()

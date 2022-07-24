@@ -12,7 +12,7 @@ namespace EasyCrudNET
         {
             try
             {
-                if (_sqlDataReaderResponses.Count <= 0)
+                if (_sqlDataReaderResponses.Count == 0 || _sqlDataReaderResponses == null)
                 {
                     throw new EntityMappingException(string.Format(Messages.Get("CannotMapResultError")));
                 }
@@ -39,6 +39,11 @@ namespace EasyCrudNET
         {
             try
             {
+                if (_sqlDataReaderResponses.Count == 0 || _sqlDataReaderResponses == null)
+                {
+                    throw new EntityMappingException(string.Format(Messages.Get("CannotMapResultError")));
+                }
+
                 List<T> entities = new List<T>();
 
                 foreach (var res in _sqlDataReaderResponses)

@@ -48,28 +48,13 @@ namespace EasyCrudNET.Interfaces.Core
         public IEnumerable<T> MapResultTo<T>(Func<List<(string FieldName, object FieldValue)>, T> map) where T : class, new();
 
         /// <summary>
-        /// Execute raw sql query (SELECT STATEMENT) define by the user. In order to get the result 
-        /// we should call some OUTPUT method (Like GetResult or MapResultTo)
-        /// </summary>
-        /// <param name="query"></param>
-        /// <returns></returns>
-        public IDatabase ExecuteRawQuery(string query);
-
-        /// <summary>
         /// Execute query built (SELECT STATEMENT) with sql builder. In order to get the result 
         /// we should call some OUTPUT method (Like GetResult or MapResultTo)
         /// </summary>
         /// <returns></returns>
         public IDatabase ExecuteQuery();
-
-
-        /// <summary>
-        /// Execute raw sql query (INSERT/DELETE/UPDATE STATEMENT) define by the user. 
-        /// Its return the number of rows affected
-        /// </summary>
-        /// <param name="query"></param>
-        /// <returns></returns>
-        public int SaveChangesRawQuery(string query);
+        
+        public IDatabase FromSql(string query);
 
         /// <summary>
         /// Execute query built (INSERT/DELETE/UPDATE STATEMENT) with sql builder. 

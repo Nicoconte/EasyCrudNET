@@ -1,4 +1,5 @@
 ﻿using EasyCrudNET.Exceptions;
+using EasyCrudNET.Interfaces.Core;
 using EasyCrudNET.Interfaces.SqlBuilder;
 using EasyCrudNET.Resources;
 
