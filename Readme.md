@@ -246,26 +246,34 @@ public class Users
 
 ```C#
 
-easyCrud.ExecuteRawQuery("select * from Users").GetResult();
-
-easyCrud.ExecuteRawQuery("select * from Users").MapResultTo<Users>();
-
 easyCrud
-    .BindValues(new 
-    {
-        username = "foo",
-        password = "bar"        
-    })
-    .ExecuteRawQuery("select * from Users where username=@username and password=@password")
+    .FromSql("select * from Users")
+    .ExecuteQuery()
     .GetResult();
 
 easyCrud
+    .FromSql("select * from Users")
+    .ExecuteRawQuery()
+    .MapResultTo<Users>();
+
+easyCrud
+    .FromSql("select * from Users where username=@username and password=@password")
     .BindValues(new 
     {
         username = "foo",
         password = "bar"        
     })
-    .ExecuteRawQuery("select * from Users where username=@username and password=@password")
+    .ExecuteQuery()
+    .GetResult();
+
+easyCrud
+    .FromSql("select * from Users where username=@username and password=@password")
+    .BindValues(new 
+    {
+        username = "foo",
+        password = "bar"        
+    })
+    .ExecuteQuery()
     .MapResultTo<Users>();    
 
 ```
@@ -313,23 +321,27 @@ easyCrud
 
 ```C#
 
-easyCrud.SaveChangesRawQuery("delete from Users"); //lol
+easyCrud
+    .FromSql("delete from Users")
+    .SaveChanges(); //lol
 
 easyCrud
+    .FromSql("insert into Users values (@username, @password, @date)")
     .BindValues(new 
     {
         username = "foo",
         password = "bar",
         date = DateTime.Now
     })
-    .SaveChangesRawQuery("insert into Users values (@username, @password, @date)");
+    .SaveChanges();
 
 easyCrud
+    .FromSql($"update users set username='{"foodoeee"}' where id=@id")
     .BindValues(new
     {
         id = 1
     })
-    .SaveChangesRawQuery($"update users set username='{"foodoeee"}' where id=@id");
+    .SaveChanges();
 
 ```
 
