@@ -127,10 +127,8 @@ public List<List<(string FieldName, object FieldValue)>> GetResult();
 public IEnumerable<T> MapResultTo<T>();        
 public IEnumerable<T> MapResultTo<T>(Func<List<(string FieldName, object FieldValue)>, T> map);
 
-public IDatabase ExecuteRawQuery(string query);
 public IDatabase ExecuteQuery();
 
-public int SaveChangesRawQuery(string query);
 public int SaveChanges();
 
 public void SetSqlConnection(string connectionString);
